@@ -29,12 +29,13 @@ public class ExtraScore : Score
     private int CalculateExtraMultiples(Dictionary<int, int> numberCounts)
     {
         int score = 0;
+        int[] multipliers = { 0, 0, 0, 1, 2, 4, 8 };
 
         foreach (var numberCount in numberCounts)
         {
             if (numberCount.Value >= 3)
             {
-                int multiplier = (int)Math.Pow(2, numberCount.Value - 3);
+                int multiplier = multipliers[numberCount.Value];
                 score += multiplier * ScoreRules.TripleScores[numberCount.Key];
                 numberCounts[numberCount.Key] -= numberCount.Value;
             }
