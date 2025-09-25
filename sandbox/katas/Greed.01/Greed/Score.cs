@@ -17,6 +17,16 @@ public static class Score
 
     public static int CalculateRollScore(List<int> numbers)
     {
+        var numberCounts = CountNumbers(numbers);
+        int score = 0;
+        score += CalculateTriples(numberCounts);
+        score += CalculateSingles(numberCounts);
+
+        return score;
+    }
+
+    private static Dictionary<int, int> CountNumbers(List<int> numbers)
+    {
         var numberCounts = new Dictionary<int, int>();
 
         foreach (int number in numbers)
@@ -32,6 +42,11 @@ public static class Score
             }
         }
 
+        return numberCounts;
+    }
+
+    private static int CalculateTriples(Dictionary<int, int> numberCounts)
+    {
         int score = 0;
         foreach (var numberCount in numberCounts)
         {
@@ -40,15 +55,25 @@ public static class Score
                 score += TripleScores[numberCount.Key];
                 numberCounts[numberCount.Key] -= 3;
             }
+        }
 
+        return score;
+    }
+
+    private static int CalculateSingles(Dictionary<int, int> numberCounts)
+    {
+        int score = 0;
+
+        foreach (var numberCount in numberCounts)
+        {
             if (numberCount.Key == 1)
             {
-                score += SingleOne * numberCounts[numberCount.Key];
+                score += SingleOne * numberCounts[1];
             }
 
             if (numberCount.Key == 5)
             {
-                score += SingleFive * numberCounts[numberCount.Key];
+                score += SingleFive * numberCounts[5];
             }
         }
 
