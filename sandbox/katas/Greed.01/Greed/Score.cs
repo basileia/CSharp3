@@ -1,8 +1,21 @@
 namespace Greed;
 
-public class Score
+public static class Score
 {
-    public int CalculateBaseScore(List<int> numbers)
+    private static readonly Dictionary<int, int> TripleScores = new Dictionary<int, int>
+    {
+        {1, 1000},
+        {2, 200},
+        {3, 300},
+        {4, 400},
+        {5, 500},
+        {6, 600}
+    };
+
+    private const int SingleOne = 100;
+    private const int SingleFive = 50;
+
+    public static int CalculateRollScore(List<int> numbers)
     {
         var numberCounts = CountNumbers(numbers);
         int score = 0;
@@ -12,7 +25,7 @@ public class Score
         return score;
     }
 
-    protected Dictionary<int, int> CountNumbers(List<int> numbers)
+    private static Dictionary<int, int> CountNumbers(List<int> numbers)
     {
         var numberCounts = new Dictionary<int, int>();
 
@@ -32,14 +45,14 @@ public class Score
         return numberCounts;
     }
 
-    protected int CalculateTriples(Dictionary<int, int> numberCounts)
+    private static int CalculateTriples(Dictionary<int, int> numberCounts)
     {
         int score = 0;
         foreach (var numberCount in numberCounts)
         {
             if (numberCount.Value >= 3)
             {
-                score += ScoreRules.TripleScores[numberCount.Key];
+                score += TripleScores[numberCount.Key];
                 numberCounts[numberCount.Key] -= 3;
             }
         }
@@ -47,7 +60,7 @@ public class Score
         return score;
     }
 
-    protected int CalculateSingles(Dictionary<int, int> numberCounts)
+    private static int CalculateSingles(Dictionary<int, int> numberCounts)
     {
         int score = 0;
 
@@ -55,12 +68,12 @@ public class Score
         {
             if (numberCount.Key == 1)
             {
-                score += ScoreRules.SingleOne * numberCounts[1];
+                score += SingleOne * numberCounts[1];
             }
 
             if (numberCount.Key == 5)
             {
-                score += ScoreRules.SingleFive * numberCounts[5];
+                score += SingleFive * numberCounts[5];
             }
         }
 
