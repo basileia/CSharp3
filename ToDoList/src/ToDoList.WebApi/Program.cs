@@ -1,11 +1,16 @@
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+using ToDoList.Domain.Mapping;
 
-app.MapGet("/", () => "Hello World!");
-app.MapGet("/test", () => "Test");
-app.MapGet("/czechitas", () => "Hello Czechitas!");
-app.MapGet("/secti/{a:int}/{b:int}", (int a, int b) => $"Výsledek {a} + {b} = {(a + b)}!");
-app.MapGet("/nazdarSvete", () => "Nazdar světě");
-app.MapGet("/hello/{name}", (string name) => $"Ahoj {name}");
+var builder = WebApplication.CreateBuilder(args);
+{
+    //Configure DI
+    builder.Services.AddControllers();
+    builder.Services.AddAutoMapper(typeof(MappingProfile));
+}
+
+var app = builder.Build();
+{
+    //Configure Middleware (HTTP request pipeline)
+    app.MapControllers();
+}
 
 app.Run();
