@@ -13,7 +13,7 @@ public class ExtraScore : Score
                 return 800;
             }
 
-            if (CheckStraight(numbers))
+            if (CheckStraight(numberCounts))
             {
                 return 1200;
             }
@@ -50,9 +50,8 @@ public class ExtraScore : Score
         return counts.Values.Count(v => v == 2) == 3;
     }
 
-    private bool CheckStraight(List<int> numbers)
+    private bool CheckStraight(Dictionary<int, int> counts)
     {
-        var sorted = numbers.OrderBy(x => x).ToList();
-        return sorted.SequenceEqual(new List<int> { 1, 2, 3, 4, 5, 6 });
+        return counts.Count == 6 && counts.Values.All(v => v == 1);
     }
 }
