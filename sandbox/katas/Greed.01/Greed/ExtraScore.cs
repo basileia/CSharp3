@@ -4,6 +4,11 @@ public class ExtraScore : Score
 {
     public int CalculateExtraScore(List<int> numbers)
     {
+        if (numbers == null || numbers.Count == 0)
+        {
+            return 0;
+        }
+
         var numberCounts = CountNumbers(numbers);
 
         if (numbers.Count == 6)

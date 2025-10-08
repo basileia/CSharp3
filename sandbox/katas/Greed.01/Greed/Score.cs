@@ -4,6 +4,11 @@ public class Score
 {
     public int CalculateBaseScore(List<int> numbers)
     {
+        if (numbers == null || numbers.Count == 0)
+        {
+            return 0;
+        }
+
         var numberCounts = CountNumbers(numbers);
         int score = 0;
         score += CalculateTriples(numberCounts);
