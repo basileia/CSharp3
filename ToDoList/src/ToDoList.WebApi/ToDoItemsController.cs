@@ -7,15 +7,33 @@ using AutoMapper;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ToDoItemsController : ControllerBase
+public class ToDoItemsController(IMapper mapper) : ControllerBase
 {
-    private readonly IMapper _mapper;
-    private static List<ToDoItem> items = [];
-
-    public ToDoItemsController(IMapper mapper)
+    private readonly IMapper _mapper = mapper;
+    private static List<ToDoItem> items = new()
+{
+    new ToDoItem
     {
-        _mapper = mapper;
+        ToDoItemId = 1,
+        Name = "Nakoupit potraviny",
+        Description = "Koupit mléko, vejce a chléb",
+        IsCompleted = false
+    },
+    new ToDoItem
+    {
+        ToDoItemId = 2,
+        Name = "Uklidit kuchyň",
+        Description = "Uklidit nádobí a utřít stůl",
+        IsCompleted = true
+    },
+    new ToDoItem
+    {
+        ToDoItemId = 3,
+        Name = "Zavolat doktorovi",
+        Description = "Objednat se na kontrolu",
+        IsCompleted = false
     }
+};
 
     [HttpPost]
     public IActionResult Create(ToDoItemCreateRequestDto request) //pouzijeme DTO - Data Transfer Object
@@ -60,13 +78,27 @@ public class ToDoItemsController : ControllerBase
     {
         try
         {
-            throw new Exception("Neco se opravdu nepovedlo.");
+            var item = items.Find(x => x.ToDoItemId == toDoItemId);
+
+            if (item == null)
+            {
+                return Problem(
+                    detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            }
+
+            var responseDto = _mapper.Map<ToDoItemGetResponseDto>(item);
+
+            return Ok(responseDto);
         }
         catch (Exception ex)
         {
-            return Problem(ex.Message, null, StatusCodes.Status500InternalServerError); //500
+            return Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
         }
-        return Ok(); //200
     }
 
     [HttpPut("{toDoItemId:int}")]
