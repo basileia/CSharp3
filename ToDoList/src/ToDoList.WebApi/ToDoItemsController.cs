@@ -104,7 +104,34 @@ public class ToDoItemsController(IMapper mapper) : ControllerBase
     [HttpPut("{toDoItemId:int}")]
     public IActionResult UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
     {
-        return Ok(); //200
+        try
+        {
+            var existingItem = items.Find(x => x.ToDoItemId == toDoItemId);
+            if (existingItem == null)
+            {
+                return Problem(
+                    detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            }
+
+            int index = items.FindIndex(x => x.ToDoItemId == toDoItemId);
+
+            var updatedItem = _mapper.Map<ToDoItem>(request);
+
+            updatedItem.ToDoItemId = toDoItemId;
+
+            items[index] = updatedItem;
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
     }
 
     [HttpDelete("{toDoItemId:int}")]
