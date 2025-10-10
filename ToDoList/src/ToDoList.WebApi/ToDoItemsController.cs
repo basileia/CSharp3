@@ -7,9 +7,8 @@ using AutoMapper;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ToDoItemsController(IMapper mapper) : ControllerBase
+public class ToDoItemsController(IMapper mapper) : BaseApiController(mapper)
 {
-    private readonly IMapper _mapper = mapper;
     private static List<ToDoItem> items = new()
 {
     new ToDoItem
@@ -38,45 +37,36 @@ public class ToDoItemsController(IMapper mapper) : ControllerBase
     [HttpPost]
     public IActionResult Create(ToDoItemCreateRequestDto request) //pouzijeme DTO - Data Transfer Object
     {
-        var item = _mapper.Map<ToDoItem>(request);
-
-        try
+        return ExecuteWithExceptionHandling(() =>
         {
+            var item = Mapper.Map<ToDoItem>(request);
             item.ToDoItemId = items.Count == 0 ? 1 : items.Max(x => x.ToDoItemId) + 1;
             items.Add(item);
-        }
-        catch (Exception ex)
-        {
-            return Problem(ex.Message, null, StatusCodes.Status500InternalServerError); //500
-        }
 
-        var responseDto = _mapper.Map<ToDoItemGetResponseDto>(item);
-
-        return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.ToDoItemId }, responseDto);
+            var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
+            return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.ToDoItemId }, responseDto);
+        });
     }
 
     [HttpGet]
     public IActionResult Read() //api/ToDoItems GET
     {
-        try
+        return ExecuteWithExceptionHandling(() =>
         {
             if (items == null)
             {
                 return Problem("Seznam úkolů nenalezen", statusCode: StatusCodes.Status404NotFound);
             }
-            var response = _mapper.Map<List<ToDoItemGetResponseDto>>(items);
+
+            var response = Mapper.Map<List<ToDoItemGetResponseDto>>(items);
             return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            return Problem(ex.Message, null, StatusCodes.Status500InternalServerError);
-        }
+        });
     }
 
     [HttpGet("{toDoItemId:int}")]
     public IActionResult ReadById(int toDoItemId) //api/ToDoItems/<id> GET
     {
-        try
+        return ExecuteWithExceptionHandling(() =>
         {
             var item = items.Find(x => x.ToDoItemId == toDoItemId);
 
@@ -88,25 +78,18 @@ public class ToDoItemsController(IMapper mapper) : ControllerBase
                 );
             }
 
-            var responseDto = _mapper.Map<ToDoItemGetResponseDto>(item);
-
+            var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
             return Ok(responseDto);
-        }
-        catch (Exception ex)
-        {
-            return Problem(
-                detail: ex.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
+        });
     }
 
     [HttpPut("{toDoItemId:int}")]
     public IActionResult UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
     {
-        try
+        return ExecuteWithExceptionHandling(() =>
         {
             var existingItem = items.Find(x => x.ToDoItemId == toDoItemId);
+
             if (existingItem == null)
             {
                 return Problem(
@@ -116,28 +99,18 @@ public class ToDoItemsController(IMapper mapper) : ControllerBase
             }
 
             int index = items.FindIndex(x => x.ToDoItemId == toDoItemId);
-
-            var updatedItem = _mapper.Map<ToDoItem>(request);
-
+            var updatedItem = Mapper.Map<ToDoItem>(request);
             updatedItem.ToDoItemId = toDoItemId;
-
             items[index] = updatedItem;
 
             return NoContent();
-        }
-        catch (Exception ex)
-        {
-            return Problem(
-                detail: ex.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
+        });
     }
 
     [HttpDelete("{toDoItemId:int}")]
     public IActionResult DeleteById(int toDoItemId)
     {
-        try
+        return ExecuteWithExceptionHandling(() =>
         {
             var toDoItem = items.Find(item => item.ToDoItemId == toDoItemId);
 
@@ -150,16 +123,8 @@ public class ToDoItemsController(IMapper mapper) : ControllerBase
             }
 
             items.Remove(toDoItem);
-
             return NoContent();
-        }
-        catch (Exception ex)
-        {
-            return Problem(
-                detail: ex.Message,
-                statusCode: StatusCodes.Status500InternalServerError
-            );
-        }
+        });
     }
 }
 
