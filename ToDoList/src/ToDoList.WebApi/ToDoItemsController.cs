@@ -137,7 +137,29 @@ public class ToDoItemsController(IMapper mapper) : ControllerBase
     [HttpDelete("{toDoItemId:int}")]
     public IActionResult DeleteById(int toDoItemId)
     {
-        return Ok(); //200
+        try
+        {
+            var toDoItem = items.Find(item => item.ToDoItemId == toDoItemId);
+
+            if (toDoItem == null)
+            {
+                return Problem(
+                    detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                    statusCode: StatusCodes.Status404NotFound
+                );
+            }
+
+            items.Remove(toDoItem);
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError
+            );
+        }
     }
 }
 
