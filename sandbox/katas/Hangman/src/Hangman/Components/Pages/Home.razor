@@ -1,0 +1,141 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+@using Hangman.Services
+@using global::Hangman.Interfaces
+
+@inject IWordService WordService
+
+<PageTitle>Hangman</PageTitle>
+
+<div class="header-bar">
+    <h1>HANGMAN</h1>
+</div>
+
+<div class="setup-section">
+    <label>
+        Přezdívka:
+        <input class="nickname-input" type="text" @bind="nickname" />
+    </label>
+
+    <div class="category-section">
+        <p>Vyber kategorii:</p>
+        @if (categories != null)
+        {
+            <div class="category-radio-container">
+                @foreach (var category in categories)
+                {
+                    <label class="category-radio">
+                        <input type="radio" name="category" value="@category" checked="@(selectedCategory == category)"
+                            @onchange="() => selectedCategory = category" />
+                        <span>@category</span>
+                    </label>
+                }
+            </div>
+        }
+        else
+        {
+            <p>Načítání kategorií...</p>
+        }
+    </div>
+
+    <button @onclick="StartGame" class="start-btn">Start nové hry</button>
+</div>
+
+@if (game != null)
+{
+    <div class="game-section">
+        <p class="masked-word">@maskedWord</p>
+
+        <div class="guess-section">
+            <label>
+                Hádej písmeno:
+                <input type="text" maxlength="1" @bind="currentGuess" @onkeyup="HandleKeyPress" class="guess-input"
+                    disabled="@game.IsGameOver()" />
+            </label>
+            <button @onclick="SubmitGuess" class="guess-btn" disabled="@game.IsGameOver()">Hádám</button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <p class="guess-message">@message</p>
+        }
+
+        @if (game.GuessedLetters.Any())
+        {
+            <div class="guessed-letters">
+                <p>Už hádaná písmena:</p>
+                <p>@string.Join(", ", game.GuessedLetters.OrderBy(c => c))</p>
+            </div>
+        }
+
+        <p>Počet chyb: @game.NumberOfMistakes / @game.MaxMistakes</p>
+
+        @if (game.IsGameOver())
+        {
+            <h2>@(game.IsWordGuessed() ? "🎉 Vyhrál/a jsi!" : "💀 Prohra")</h2>
+
+            @if (!game.IsWordGuessed())
+            {
+                <p>Správné slovo bylo: <strong>@game.SecretWord</strong></p>
+            }
+            <button @onclick="ResetGame" class="start-btn">Nová hra</button>
+        }
+    </div>
+}
+
+@code {
+    private string nickname = "";
+    private List<string>? categories;
+    private string? selectedCategory = null;
+    private HangmanGameService? game;
+    private string? maskedWord;
+    private string? message;
+    private string currentGuess = "";
+
+    protected override void OnInitialized()
+    {
+        categories = WordService.GetCategories();
+    }
+
+    private void StartGame()
+    {
+        var randomWord = WordService.GetRandomWord(selectedCategory);
+        if (!string.IsNullOrEmpty(randomWord))
+        {
+            game = new HangmanGameService(randomWord);
+            maskedWord = game.GetCurrentProgress();
+            message = "";
+            currentGuess = "";
+        }
+    }
+
+    private void SubmitGuess()
+    {
+        if (string.IsNullOrWhiteSpace(currentGuess) || game == null) return;
+
+        char letter = currentGuess[0];
+        var (success, msg) = game.Guess(letter);
+        message = msg;
+        maskedWord = game.GetCurrentProgress();
+        currentGuess = "";
+    }
+
+    private void HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            SubmitGuess();
+        }
+    }
+
+    private void ResetGame()
+    {
+        nickname = "";
+        selectedCategory = null;
+        game = null;
+        maskedWord = null;
+        message = null;
+        currentGuess = "";
+    }
+}
