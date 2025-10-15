@@ -6,9 +6,11 @@ namespace Hangman.Services
     public class WordService : IWordService
     {
         private readonly List<WordEntry> _words = new();
+        private readonly ILogger<WordService> _logger;
 
-        public WordService(string filePath)
+        public WordService(string filePath, ILogger<WordService> logger)
         {
+            _logger = logger;
             LoadWords(filePath);
         }
 
@@ -18,7 +20,7 @@ namespace Hangman.Services
             {
                 if (!File.Exists(filePath))
                 {
-                    Console.WriteLine($"[Warning] CSV soubor '{filePath}' nebyl nalezen.");
+                    _logger.LogWarning("CSV file '{FilePath}' was not found.", filePath);
                     return;
                 }
 
@@ -26,7 +28,7 @@ namespace Hangman.Services
 
                 if (lines.Length <= 1)
                 {
-                    Console.WriteLine($"[Warning] CSV soubor '{filePath}' neobsahuje žádná slova.");
+                    _logger.LogWarning("CSV file '{FilePath}' does not contain any words.", filePath);
                     return;
                 }
 
@@ -44,13 +46,13 @@ namespace Hangman.Services
                     }
                     else
                     {
-                        Console.WriteLine($"[Warning] Ignoruji řádek se špatným formátem: {line}");
+                        _logger.LogWarning("Skipping invalid line format: {Line}", line);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Error] Chyba při načítání CSV: {ex.Message}");
+                _logger.LogError(ex, "Error occurred while loading the CSV file.");
             }
         }
 
@@ -67,7 +69,7 @@ namespace Hangman.Services
 
             if (!query.Any())
             {
-                Console.WriteLine("[Warning] Nebyla nalezena žádná slova pro danou kategorii.");
+                _logger.LogWarning("No words were found for category '{Category}'.", category);
                 return null;
             }
 
