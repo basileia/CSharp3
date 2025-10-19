@@ -51,7 +51,7 @@ public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
     public void ReadById_WhenItemDoesNotExist_ReturnsNotFound()
     {
         // Arrange
-        var nonExistentId = 999;
+        int nonExistentId = 999;
 
         // Act
         var result = Controller.ReadById(nonExistentId);
