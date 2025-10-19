@@ -13,7 +13,7 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
     public void UpdateById_WhenItemDoesNotExist_ReturnsNotFound()
     {
         // Arrange
-        int nonExistentId = 999;
+        int nonExistentId = GetNextId() + 100;
         var updateDto = CreateValidUpdateDto();
 
         // Act

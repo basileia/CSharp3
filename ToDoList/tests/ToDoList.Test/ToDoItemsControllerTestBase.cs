@@ -76,4 +76,18 @@ public abstract class ToDoItemsControllerTestBase
         var currentItems = (List<ToDoItem>)itemsField.GetValue(null);
         return currentItems.Count > 0 ? currentItems.Max(x => x.ToDoItemId) + 1 : 1;
     }
+
+    protected static List<ToDoItem> GetCurrentItems()
+    {
+        var itemsField = typeof(ToDoItemsController)
+            .GetField("items", BindingFlags.NonPublic | BindingFlags.Static);
+
+        return (List<ToDoItem>)itemsField.GetValue(null)!;
+    }
+
+    protected static void AddItem(ToDoItem item)
+    {
+        var items = GetCurrentItems();
+        items.Add(item);
+    }
 }
