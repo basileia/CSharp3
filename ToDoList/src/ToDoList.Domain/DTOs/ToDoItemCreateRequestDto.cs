@@ -1,8 +1,6 @@
 namespace ToDoList.Domain.DTOs;
 
-public record ToDoItemCreateRequestDto()
-{
-    public string Name { get; init; }
-    public string Description { get; init; }
-    public bool IsCompleted { get; init; } = false;
-}
+public record ToDoItemCreateRequestDto(
+    string Name,
+    string Description,
+    bool IsCompleted);
