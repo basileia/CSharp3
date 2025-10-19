@@ -3,6 +3,7 @@ using Moq;
 using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using ToDoList.WebApi;
+using System.Reflection;
 
 namespace ToDoList.Test;
 
@@ -65,5 +66,14 @@ public abstract class ToDoItemsControllerTestBase
             Description = description,
             IsCompleted = isCompleted
         };
+    }
+
+    protected int GetNextId()
+    {
+        var itemsField = typeof(ToDoItemsController)
+            .GetField("items", BindingFlags.NonPublic | BindingFlags.Static);
+
+        var currentItems = (List<ToDoItem>)itemsField.GetValue(null);
+        return currentItems.Count > 0 ? currentItems.Max(x => x.ToDoItemId) + 1 : 1;
     }
 }
