@@ -35,7 +35,7 @@ public class ToDoItemsController(IMapper mapper) : BaseApiController(mapper)
 };
 
     [HttpPost]
-    public IActionResult Create(ToDoItemCreateRequestDto request) //pouzijeme DTO - Data Transfer Object
+    public IActionResult Create(ToDoItemCreateRequestDto request)
     {
         return ExecuteWithExceptionHandling(() =>
         {
@@ -49,7 +49,7 @@ public class ToDoItemsController(IMapper mapper) : BaseApiController(mapper)
     }
 
     [HttpGet]
-    public IActionResult Read() //api/ToDoItems GET
+    public IActionResult Read()
     {
         return ExecuteWithExceptionHandling(() =>
         {
@@ -64,7 +64,7 @@ public class ToDoItemsController(IMapper mapper) : BaseApiController(mapper)
     }
 
     [HttpGet("{toDoItemId:int}")]
-    public IActionResult ReadById(int toDoItemId) //api/ToDoItems/<id> GET
+    public IActionResult ReadById(int toDoItemId)
     {
         return ExecuteWithExceptionHandling(() =>
         {
