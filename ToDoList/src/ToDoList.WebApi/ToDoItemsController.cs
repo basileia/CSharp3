@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using AutoMapper;
+using ToDoList.Persistence;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ToDoItemsController(IMapper mapper) : BaseApiController(mapper)
+public class ToDoItemsController : BaseApiController
 {
+    private readonly ToDoItemsContext context;
     private static List<ToDoItem> items = new()
 {
     new ToDoItem
@@ -33,6 +35,22 @@ public class ToDoItemsController(IMapper mapper) : BaseApiController(mapper)
         IsCompleted = false
     }
 };
+
+    public ToDoItemsController(ToDoItemsContext context, IMapper mapper)
+            : base(mapper)
+    {
+        this.context = context;
+
+        ToDoItem item = new ToDoItem
+        {
+            Name = "První úkol",
+            Description = "První popisek",
+            IsCompleted = false
+        };
+
+        context.ToDoItems.Add(item);
+        context.SaveChanges();
+    }
 
     [HttpPost]
     public IActionResult Create(ToDoItemCreateRequestDto request)
