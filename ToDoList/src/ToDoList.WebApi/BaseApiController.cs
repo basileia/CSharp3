@@ -2,15 +2,18 @@ namespace ToDoList.WebApi;
 
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
+using ToDoList.Persistence;
 
 [ApiController]
 public class BaseApiController : ControllerBase
 {
     protected readonly IMapper Mapper;
+    protected readonly ToDoItemsContext Context;
 
-    protected BaseApiController(IMapper mapper)
+    protected BaseApiController(IMapper mapper, ToDoItemsContext context)
     {
         Mapper = mapper;
+        Context = context;
     }
 
     protected IActionResult ExecuteWithExceptionHandling(Func<IActionResult> action)
