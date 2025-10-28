@@ -15,6 +15,9 @@ public class ToDoItemsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite(connectionString);
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlite(connectionString);
+        }
     }
 }
