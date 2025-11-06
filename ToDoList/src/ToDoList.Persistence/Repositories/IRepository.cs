@@ -8,6 +8,7 @@ public interface IRepository<T> where T : class
     public void Create(ToDoItem item);
     public IEnumerable<ToDoItem> Read();
     public ToDoItem? ReadById(int id);
+    public void Update(ToDoItem item);
 
 }
 

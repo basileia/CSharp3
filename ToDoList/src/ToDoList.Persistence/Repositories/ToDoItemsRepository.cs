@@ -16,5 +16,10 @@ public class ToDoItemsRepository(ToDoItemsContext context) : IRepository<ToDoIte
 
     public IEnumerable<ToDoItem> Read() => dbSet.AsNoTracking().ToList();
     public ToDoItem? ReadById(int id) => dbSet.AsNoTracking().FirstOrDefault(item => item.ToDoItemId == id);
+    public void Update(ToDoItem item)
+    {
+        dbSet.Update(item);
+        context.SaveChanges();
+    }
 }
 
