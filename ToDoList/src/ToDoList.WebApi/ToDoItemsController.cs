@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using AutoMapper;
-using ToDoList.Persistence;
+using ToDoList.Persistence.Repositories;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ToDoItemsController(IMapper mapper, ToDoItemsContext context) : BaseApiController(mapper, context)
+public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repository) : BaseApiController(mapper, repository)
 {
     [HttpPost]
     public IActionResult Create(ToDoItemCreateRequestDto request)
@@ -16,85 +16,86 @@ public class ToDoItemsController(IMapper mapper, ToDoItemsContext context) : Bas
         return ExecuteWithExceptionHandling(() =>
             {
                 var item = Mapper.Map<ToDoItem>(request);
-                Context.ToDoItems.Add(item);
-                Context.SaveChanges();
+                repository.Create(item);
 
                 var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
-                return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.ToDoItemId }, responseDto);
+                return Ok();
+
+                //return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.ToDoItemId }, responseDto);
             });
     }
-
-    [HttpGet]
-    public IActionResult Read()
-    {
-        return ExecuteWithExceptionHandling(() =>
-            {
-                var items = Context.ToDoItems.ToList();
-                var response = Mapper.Map<List<ToDoItemGetResponseDto>>(items);
-                return Ok(response);
-            });
-    }
-
-    [HttpGet("{toDoItemId:int}")]
-    public IActionResult ReadById(int toDoItemId)
-    {
-        return ExecuteWithExceptionHandling(() =>
-            {
-                var item = Context.ToDoItems.Find(toDoItemId);
-
-                if (item == null)
+    /*
+        [HttpGet]
+        public IActionResult Read()
+        {
+            return ExecuteWithExceptionHandling(() =>
                 {
-                    return Problem(
-                        detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
-                        statusCode: StatusCodes.Status404NotFound
-                    );
-                }
+                    var items = Context.ToDoItems.ToList();
+                    var response = Mapper.Map<List<ToDoItemGetResponseDto>>(items);
+                    return Ok(response);
+                });
+        }
 
-                var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
-                return Ok(responseDto);
-            });
-    }
-
-    [HttpPut("{toDoItemId:int}")]
-    public IActionResult UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
-    {
-        return ExecuteWithExceptionHandling(() =>
-            {
-                var existingItem = Context.ToDoItems.Find(toDoItemId);
-                if (existingItem == null)
+        [HttpGet("{toDoItemId:int}")]
+        public IActionResult ReadById(int toDoItemId)
+        {
+            return ExecuteWithExceptionHandling(() =>
                 {
-                    return Problem(
-                        detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
-                        statusCode: StatusCodes.Status404NotFound
-                    );
-                }
+                    var item = Context.ToDoItems.Find(toDoItemId);
 
-                Mapper.Map(request, existingItem);
-                Context.SaveChanges();
+                    if (item == null)
+                    {
+                        return Problem(
+                            detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                            statusCode: StatusCodes.Status404NotFound
+                        );
+                    }
 
-                return NoContent();
-            });
-    }
+                    var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
+                    return Ok(responseDto);
+                });
+        }
 
-    [HttpDelete("{toDoItemId:int}")]
-    public IActionResult DeleteById(int toDoItemId)
-    {
-        return ExecuteWithExceptionHandling(() =>
-            {
-                var toDoItem = Context.ToDoItems.Find(toDoItemId);
-                if (toDoItem == null)
+        [HttpPut("{toDoItemId:int}")]
+        public IActionResult UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
+        {
+            return ExecuteWithExceptionHandling(() =>
                 {
-                    return Problem(
-                        detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
-                        statusCode: StatusCodes.Status404NotFound
-                    );
-                }
+                    var existingItem = Context.ToDoItems.Find(toDoItemId);
+                    if (existingItem == null)
+                    {
+                        return Problem(
+                            detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                            statusCode: StatusCodes.Status404NotFound
+                        );
+                    }
 
-                Context.ToDoItems.Remove(toDoItem);
-                Context.SaveChanges();
+                    Mapper.Map(request, existingItem);
+                    Context.SaveChanges();
 
-                return NoContent();
-            });
-    }
+                    return NoContent();
+                });
+        }
+
+        [HttpDelete("{toDoItemId:int}")]
+        public IActionResult DeleteById(int toDoItemId)
+        {
+            return ExecuteWithExceptionHandling(() =>
+                {
+                    var toDoItem = Context.ToDoItems.Find(toDoItemId);
+                    if (toDoItem == null)
+                    {
+                        return Problem(
+                            detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                            statusCode: StatusCodes.Status404NotFound
+                        );
+                    }
+
+                    Context.ToDoItems.Remove(toDoItem);
+                    Context.SaveChanges();
+
+                    return NoContent();
+                });
+        } */
 }
 
