@@ -1,23 +1,20 @@
 namespace ToDoList.Persistence.Repositories;
 
+using Microsoft.EntityFrameworkCore;
 using ToDoList.Domain.Models;
 
-
-
-public class ToDoItemsRepository : IRepository<ToDoItem>
+public class ToDoItemsRepository(ToDoItemsContext context) : IRepository<ToDoItem>
 {
-    private readonly ToDoItemsContext context;
+    private readonly ToDoItemsContext context = context;
+    private readonly DbSet<ToDoItem> dbSet = context.Set<ToDoItem>();
 
-    public ToDoItemsRepository(ToDoItemsContext context)
-    {
-        this.context = context;
-    }
     public void Create(ToDoItem item)
     {
-        context.ToDoItems.Add(item);
+        dbSet.Add(item);
         context.SaveChanges();
     }
 
-
+    public IEnumerable<ToDoItem> Read() => dbSet.AsNoTracking().ToList();
+    public ToDoItem? ReadById(int id) => dbSet.AsNoTracking().FirstOrDefault(item => item.ToDoItemId == id);
 }
 

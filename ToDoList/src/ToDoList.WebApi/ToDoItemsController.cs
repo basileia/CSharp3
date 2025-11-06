@@ -19,83 +19,79 @@ public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repositor
                 repository.Create(item);
 
                 var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
-                return Ok();
 
-                //return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.ToDoItemId }, responseDto);
+                return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.ToDoItemId }, responseDto);
+            });
+    }
+
+    [HttpGet]
+    public IActionResult Read()
+    {
+        var items = Repository.Read();
+        var response = Mapper.Map<IEnumerable<ToDoItemGetResponseDto>>(items);
+        return Ok(response);
+    }
+
+    [HttpGet("{toDoItemId:int}")]
+    public IActionResult ReadById(int toDoItemId)
+    {
+        return ExecuteWithExceptionHandling(() =>
+            {
+                var item = Repository.ReadById(toDoItemId);
+
+                if (item == null)
+                {
+                    return Problem(
+                        detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                        statusCode: StatusCodes.Status404NotFound
+                    );
+                }
+
+                var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
+                return Ok(responseDto);
             });
     }
     /*
-        [HttpGet]
-        public IActionResult Read()
-        {
-            return ExecuteWithExceptionHandling(() =>
+                [HttpPut("{toDoItemId:int}")]
+                public IActionResult UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
                 {
-                    var items = Context.ToDoItems.ToList();
-                    var response = Mapper.Map<List<ToDoItemGetResponseDto>>(items);
-                    return Ok(response);
-                });
-        }
+                    return ExecuteWithExceptionHandling(() =>
+                        {
+                            var existingItem = Context.ToDoItems.Find(toDoItemId);
+                            if (existingItem == null)
+                            {
+                                return Problem(
+                                    detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                                    statusCode: StatusCodes.Status404NotFound
+                                );
+                            }
 
-        [HttpGet("{toDoItemId:int}")]
-        public IActionResult ReadById(int toDoItemId)
-        {
-            return ExecuteWithExceptionHandling(() =>
+                            Mapper.Map(request, existingItem);
+                            Context.SaveChanges();
+
+                            return NoContent();
+                        });
+                }
+
+                [HttpDelete("{toDoItemId:int}")]
+                public IActionResult DeleteById(int toDoItemId)
                 {
-                    var item = Context.ToDoItems.Find(toDoItemId);
+                    return ExecuteWithExceptionHandling(() =>
+                        {
+                            var toDoItem = Context.ToDoItems.Find(toDoItemId);
+                            if (toDoItem == null)
+                            {
+                                return Problem(
+                                    detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                                    statusCode: StatusCodes.Status404NotFound
+                                );
+                            }
 
-                    if (item == null)
-                    {
-                        return Problem(
-                            detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
-                            statusCode: StatusCodes.Status404NotFound
-                        );
-                    }
+                            Context.ToDoItems.Remove(toDoItem);
+                            Context.SaveChanges();
 
-                    var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
-                    return Ok(responseDto);
-                });
-        }
-
-        [HttpPut("{toDoItemId:int}")]
-        public IActionResult UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
-        {
-            return ExecuteWithExceptionHandling(() =>
-                {
-                    var existingItem = Context.ToDoItems.Find(toDoItemId);
-                    if (existingItem == null)
-                    {
-                        return Problem(
-                            detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
-                            statusCode: StatusCodes.Status404NotFound
-                        );
-                    }
-
-                    Mapper.Map(request, existingItem);
-                    Context.SaveChanges();
-
-                    return NoContent();
-                });
-        }
-
-        [HttpDelete("{toDoItemId:int}")]
-        public IActionResult DeleteById(int toDoItemId)
-        {
-            return ExecuteWithExceptionHandling(() =>
-                {
-                    var toDoItem = Context.ToDoItems.Find(toDoItemId);
-                    if (toDoItem == null)
-                    {
-                        return Problem(
-                            detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
-                            statusCode: StatusCodes.Status404NotFound
-                        );
-                    }
-
-                    Context.ToDoItems.Remove(toDoItem);
-                    Context.SaveChanges();
-
-                    return NoContent();
-                });
-        } */
+                            return NoContent();
+                        });
+                } */
 }
 
