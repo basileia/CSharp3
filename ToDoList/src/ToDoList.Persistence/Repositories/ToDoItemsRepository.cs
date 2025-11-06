@@ -21,5 +21,15 @@ public class ToDoItemsRepository(ToDoItemsContext context) : IRepository<ToDoIte
         dbSet.Update(item);
         context.SaveChanges();
     }
+
+    public void Delete(int id)
+    {
+        var item = dbSet.Find(id);
+        if (item != null)
+        {
+            dbSet.Remove(item);
+            context.SaveChanges();
+        }
+    }
 }
 

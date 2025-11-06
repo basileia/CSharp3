@@ -71,26 +71,24 @@ public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repositor
                 return NoContent();
             });
     }
-    /*
-                    [HttpDelete("{toDoItemId:int}")]
-                    public IActionResult DeleteById(int toDoItemId)
-                    {
-                        return ExecuteWithExceptionHandling(() =>
-                            {
-                                var toDoItem = Context.ToDoItems.Find(toDoItemId);
-                                if (toDoItem == null)
-                                {
-                                    return Problem(
-                                        detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
-                                        statusCode: StatusCodes.Status404NotFound
-                                    );
-                                }
 
-                                Context.ToDoItems.Remove(toDoItem);
-                                Context.SaveChanges();
+    [HttpDelete("{toDoItemId:int}")]
+    public IActionResult DeleteById(int toDoItemId)
+    {
+        return ExecuteWithExceptionHandling(() =>
+            {
+                var toDoItem = Repository.ReadById(toDoItemId);
+                if (toDoItem == null)
+                {
+                    return Problem(
+                        detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                        statusCode: StatusCodes.Status404NotFound
+                    );
+                }
 
-                                return NoContent();
-                            });
-                    } */
+                Repository.Delete(toDoItemId);
+                return NoContent();
+            });
+    }
 }
 
