@@ -18,10 +18,11 @@ public class ToDoItemsControllerCreateTests : ToDoItemsControllerTestBase
 
         // Assert
         var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
+        var createdDto = Assert.IsType<ToDoItemGetResponseDto>(createdAtActionResult.Value);
         Assert.Equal(nameof(Controller.ReadById), createdAtActionResult.ActionName);
 
         // Cleanup
-        var createdItem = Context.ToDoItems.FirstOrDefault(x => x.Name == createDto.Name);
+        var createdItem = Repository.ReadById(createdDto.ToDoItemId);
         if (createdItem != null)
         {
             RemoveItemFromDb(createdItem.ToDoItemId);

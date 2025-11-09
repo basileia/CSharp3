@@ -1,7 +1,6 @@
 namespace ToDoList.Test.IntegrationTests;
 
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using ToDoList.WebApi;

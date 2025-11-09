@@ -34,7 +34,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         var objectResult = Assert.IsType<ObjectResult>(result);
         Assert.Equal(StatusCodes.Status404NotFound, objectResult.StatusCode);
 
-        var items = Context.ToDoItems.ToList();
+        var items = Repository.Read();
         Assert.All(items, i => Assert.NotEqual(nonExistentId, i.ToDoItemId));
     }
 
