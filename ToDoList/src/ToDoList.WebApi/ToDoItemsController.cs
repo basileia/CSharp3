@@ -5,6 +5,7 @@ using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using AutoMapper;
 using ToDoList.Persistence.Repositories;
+using System;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -90,5 +91,7 @@ public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repositor
                 return NoContent();
             });
     }
+
+    public object Create(object createDto) => throw new NotImplementedException();
 }
 

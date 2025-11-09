@@ -7,11 +7,12 @@ using ToDoList.Domain.Models;
 using ToDoList.WebApi;
 using ToDoList.Persistence;
 using ToDoList.Domain.Mapping;
+using ToDoList.Persistence.Repositories;
 
 public abstract class ToDoItemsControllerTestBase : IDisposable
 {
     protected IMapper Mapper { get; }
-    protected ToDoItemsContext Context { get; }
+    protected IRepository<ToDoItem> Repository { get; }
     protected ToDoItemsController Controller { get; }
     private readonly string dbPath = "../../../IntegrationTests/data/localdb_test.db";
 
@@ -26,8 +27,10 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
             Directory.CreateDirectory(folder!);
         }
 
-        Context = new ToDoItemsContext($"Data Source={dbPath}");
-        Context.Database.EnsureCreated();
+        var dbContext = new ToDoItemsContext($"Data Source={dbPath}");
+        dbContext.Database.EnsureCreated();
+
+        Repository = new ToDoItemsRepository(dbContext);
 
         var config = new MapperConfiguration(cfg =>
         {
@@ -35,26 +38,24 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
         });
         Mapper = config.CreateMapper();
 
-        Controller = new ToDoItemsController(Mapper, Context);
+        Controller = new ToDoItemsController(Mapper, Repository);
     }
 
     protected ToDoItem AddItemToDb(ToDoItem item)
     {
-        Context.ToDoItems.Add(item);
-        Context.SaveChanges();
+        Repository.Create(item);
         return item;
     }
 
     protected ToDoItem? GetItemFromDb(int id) =>
-        Context.ToDoItems.Find(id);
+        Repository.ReadById(id);
 
     protected void RemoveItemFromDb(int id)
     {
-        var item = Context.ToDoItems.Find(id);
+        var item = Repository.ReadById(id);
         if (item != null)
         {
-            Context.ToDoItems.Remove(item);
-            Context.SaveChanges();
+            Repository.Delete(item.ToDoItemId);
         }
     }
 
@@ -89,7 +90,12 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
 
     public void Dispose()
     {
-        Context.Database.ExecuteSqlRaw("DELETE FROM ToDoItems;");
+        var items = Repository.Read();
+        foreach (var item in items)
+        {
+            Repository.Delete(item.ToDoItemId);
+        }
+
         GC.SuppressFinalize(this);
     }
 }

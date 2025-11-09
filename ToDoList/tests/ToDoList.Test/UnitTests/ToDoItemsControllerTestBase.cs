@@ -63,14 +63,12 @@ public abstract class ToDoItemsControllerTestBase
     }
 
     protected static ToDoItem CreateValidToDoItem(
-        int id = 1,
         string name = "Test Item",
         string description = "Test Description",
         bool isCompleted = false)
     {
         return new ToDoItem
         {
-            ToDoItemId = id,
             Name = name,
             Description = description,
             IsCompleted = isCompleted
