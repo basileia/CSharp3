@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using ToDoList.Domain.DTOs;
@@ -12,7 +13,7 @@ namespace ToDoList.Test.UnitTests
         {
             // Arrange
             var createDto = CreateValidCreateDto();
-            var createdItem = CreateValidToDoItem(createDto.Name, createDto.Description, createDto.IsCompleted);
+            var createdItem = CreateValidToDoItem(1, createDto.Name, createDto.Description, createDto.IsCompleted);
             var responseDto = CreateValidGetResponseDto(1, createDto.Name, createDto.Description, createDto.IsCompleted);
 
             MapperMock.Map<ToDoItem>(createDto).Returns(createdItem);
@@ -32,7 +33,7 @@ namespace ToDoList.Test.UnitTests
         {
             // Arrange
             var createDto = CreateValidCreateDto();
-            var createdItem = CreateValidToDoItem(createDto.Name, createDto.Description, createDto.IsCompleted);
+            var createdItem = CreateValidToDoItem(1, createDto.Name, createDto.Description, createDto.IsCompleted);
             var expectedDto = CreateValidGetResponseDto(1, createDto.Name, createDto.Description, createDto.IsCompleted);
 
             MapperMock.Map<ToDoItem>(createDto).Returns(createdItem);
@@ -51,6 +52,46 @@ namespace ToDoList.Test.UnitTests
             Assert.Equal(expectedDto.IsCompleted, actualDto.IsCompleted);
 
             RepositoryMock.Received(1).Create(Arg.Any<ToDoItem>());
+        }
+
+        [Fact]
+        public void Create_ReturnsCorrectRouteValues()
+        {
+            // Arrange
+            var createDto = CreateValidCreateDto();
+            var createdItem = CreateValidToDoItem(id: 123);
+            var responseDto = CreateValidGetResponseDto(id: 123);
+
+            MapperMock.Map<ToDoItem>(createDto).Returns(createdItem);
+            MapperMock.Map<ToDoItemGetResponseDto>(createdItem).Returns(responseDto);
+
+            // Act
+            var result = Controller.Create(createDto);
+
+            // Assert
+            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
+            Assert.Equal("ReadById", createdResult.ActionName);
+            Assert.NotNull(createdResult.RouteValues);
+            Assert.Equal(123, createdResult.RouteValues["toDoItemId"]);
+        }
+
+        [Fact]
+        public void Create_WhenRepositoryThrowsException_ReturnsInternalServerError()
+        {
+            // Arrange
+            var createDto = CreateValidCreateDto();
+            var createdItem = CreateValidToDoItem();
+
+            MapperMock.Map<ToDoItem>(createDto).Returns(createdItem);
+            RepositoryMock.When(x => x.Create(Arg.Any<ToDoItem>()))
+                .Do(x => throw new Exception("Database connection failed"));
+
+            // Act
+            var result = Controller.Create(createDto);
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
         }
     }
 }

@@ -1,13 +1,7 @@
 namespace ToDoList.Test.UnitTests;
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.Configuration.Annotations;
-
 using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using ToDoList.Persistence.Repositories;
@@ -63,39 +57,18 @@ public abstract class ToDoItemsControllerTestBase
     }
 
     protected static ToDoItem CreateValidToDoItem(
+        int id = 1,
         string name = "Test Item",
         string description = "Test Description",
         bool isCompleted = false)
     {
         return new ToDoItem
         {
+            ToDoItemId = id,
             Name = name,
             Description = description,
             IsCompleted = isCompleted
         };
-    }
-
-    protected int GetNextId()
-    {
-        var itemsField = typeof(ToDoItemsController)
-            .GetField("items", BindingFlags.NonPublic | BindingFlags.Static);
-
-        var currentItems = (List<ToDoItem>)itemsField.GetValue(null);
-        return currentItems.Count > 0 ? currentItems.Max(x => x.ToDoItemId) + 1 : 1;
-    }
-
-    protected static List<ToDoItem> GetCurrentItems()
-    {
-        var itemsField = typeof(ToDoItemsController)
-            .GetField("items", BindingFlags.NonPublic | BindingFlags.Static);
-
-        return (List<ToDoItem>)itemsField.GetValue(null)!;
-    }
-
-    protected static void AddItem(ToDoItem item)
-    {
-        var items = GetCurrentItems();
-        items.Add(item);
     }
 }
 
