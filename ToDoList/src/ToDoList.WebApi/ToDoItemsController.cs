@@ -91,7 +91,5 @@ public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repositor
                 return NoContent();
             });
     }
-
-    public object Create(object createDto) => throw new NotImplementedException();
 }
 
