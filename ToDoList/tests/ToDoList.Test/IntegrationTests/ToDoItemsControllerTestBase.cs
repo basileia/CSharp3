@@ -7,12 +7,14 @@ using ToDoList.WebApi;
 using ToDoList.Persistence;
 using ToDoList.Domain.Mapping;
 using ToDoList.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 public abstract class ToDoItemsControllerTestBase : IDisposable
 {
     protected IMapper Mapper { get; }
     protected IRepository<ToDoItem> Repository { get; }
     protected ToDoItemsController Controller { get; }
+    protected ToDoItemsContext DbContext { get; }
     private readonly string dbPath = "../../../IntegrationTests/data/localdb_test.db";
 
     protected ToDoItemsControllerTestBase()
@@ -26,10 +28,10 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
             Directory.CreateDirectory(folder!);
         }
 
-        var dbContext = new ToDoItemsContext($"Data Source={dbPath}");
-        dbContext.Database.EnsureCreated();
+        DbContext = new ToDoItemsContext($"Data Source={dbPath}");
+        DbContext.Database.EnsureCreated();
 
-        Repository = new ToDoItemsRepository(dbContext);
+        Repository = new ToDoItemsRepository(DbContext);
 
         var config = new MapperConfiguration(cfg =>
         {
@@ -43,6 +45,7 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
     protected ToDoItem AddItemToDb(ToDoItem item)
     {
         Repository.Create(item);
+        DbContext.Entry(item).State = EntityState.Detached;
         return item;
     }
 

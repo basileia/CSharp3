@@ -10,7 +10,7 @@ public class ToDoItemsRepository(ToDoItemsContext context) : IRepository<ToDoIte
 
     public void Create(ToDoItem item)
     {
-        dbSet.Add(item);
+        context.ToDoItems.Add(item);
         context.SaveChanges();
     }
 

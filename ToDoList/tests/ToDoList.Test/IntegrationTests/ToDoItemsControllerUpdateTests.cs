@@ -1,10 +1,8 @@
 namespace ToDoList.Test.IntegrationTests;
 
-using System.Data.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ToDoList.Domain.DTOs;
-using ToDoList.Persistence.Migrations;
 
 public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
 {
