@@ -2,15 +2,19 @@ namespace ToDoList.WebApi;
 
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
+using ToDoList.Persistence.Repositories;
+using ToDoList.Domain.Models;
 
 [ApiController]
 public class BaseApiController : ControllerBase
 {
-    protected readonly IMapper Mapper;
+    protected IMapper Mapper { get; }
+    protected IRepository<ToDoItem> Repository { get; }
 
-    protected BaseApiController(IMapper mapper)
+    protected BaseApiController(IMapper mapper, IRepository<ToDoItem> repository)
     {
         Mapper = mapper;
+        Repository = repository;
     }
 
     protected IActionResult ExecuteWithExceptionHandling(Func<IActionResult> action)
