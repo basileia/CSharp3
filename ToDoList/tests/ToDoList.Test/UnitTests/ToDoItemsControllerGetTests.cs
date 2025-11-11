@@ -20,7 +20,7 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
 
         var expectedDtos = CreateValidGetResponseDtoList();
 
-        RepositoryMock.Read().Returns(toDoItems);
+        RepositoryMock.ReadAll().Returns(toDoItems);
         MapperMock.Map<IEnumerable<ToDoItemGetResponseDto>>(toDoItems).Returns(expectedDtos);
 
         // Act
@@ -31,7 +31,25 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
         var actualDtos = Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(okResult.Value);
 
         Assert.Equal(expectedDtos.Count, ((List<ToDoItemGetResponseDto>)actualDtos).Count);
-        RepositoryMock.Received(1).Read();
+        RepositoryMock.Received(1).ReadAll();
+    }
+
+    [Fact]
+    public void Get_ReadWhenSomeItemAvailable_ReturnsOk()
+    {
+        // Arrange
+        var someItem = new ToDoItem { Name = "Some Task", Description = "Some Description", IsCompleted = false };
+        RepositoryMock.ReadAll().Returns([someItem]);
+        MapperMock.Map<IEnumerable<ToDoItemGetResponseDto>>(Arg.Any<IEnumerable<ToDoItem>>())
+                    .Returns(CreateValidGetResponseDtoList());
+
+        // Act
+        var result = Controller.Read();
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(okResult.Value);
+        RepositoryMock.Received(1).ReadAll();
     }
 
     [Fact]
