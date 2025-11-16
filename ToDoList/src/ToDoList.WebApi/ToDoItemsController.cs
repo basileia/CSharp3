@@ -28,7 +28,7 @@ public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repositor
     [HttpGet]
     public IActionResult Read()
     {
-        var items = Repository.Read();
+        var items = Repository.ReadAll();
         var response = Mapper.Map<IEnumerable<ToDoItemGetResponseDto>>(items);
         return Ok(response);
     }

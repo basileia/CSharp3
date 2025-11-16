@@ -14,14 +14,14 @@ public class ToDoItemsRepository(ToDoItemsContext context) : IRepository<ToDoIte
         context.SaveChanges();
     }
 
-    public IEnumerable<ToDoItem> Read() => dbSet.AsNoTracking().ToList();
+    public IEnumerable<ToDoItem> ReadAll() => dbSet.AsNoTracking().ToList();
 
     public ToDoItem? ReadById(int id) => dbSet.AsNoTracking().FirstOrDefault(item => item.ToDoItemId == id);
 
     public void Update(ToDoItem item)
     {
-        dbSet.Attach(item);
-        context.Entry(item).State = EntityState.Modified;
+        var foundItem = context.ToDoItems.Find(item.ToDoItemId) ?? throw new ArgumentOutOfRangeException("Item not found");
+        context.Entry(item).CurrentValues.SetValues(item);
         context.SaveChanges();
     }
 

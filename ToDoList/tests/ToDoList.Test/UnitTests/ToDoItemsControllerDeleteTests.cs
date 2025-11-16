@@ -46,7 +46,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
     }
 
     [Fact]
-    public void DeleteById_WhenRepositoryThrowsException_ReturnsInternalServerError()
+    public void DeleteById_WhenDeleteThrows_ReturnsInternalServerError()
     {
         // Arrange
         int existingId = 1;
@@ -55,7 +55,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         RepositoryMock.ReadById(existingId).Returns(existingItem);
         RepositoryMock
             .When(r => r.Delete(existingId))
-            .Do(r => throw new Exception("Database error"));
+            .Do(_ => throw new Exception("Database error"));
 
         // Act
         var result = Controller.DeleteById(existingId);
@@ -65,4 +65,21 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
     }
 
+    public void DeleteById_WhenReadThrows_ReturnsInternalServerError()
+    {
+        // Arrange
+        int anyId = 1;
+
+        RepositoryMock
+            .When(r => r.ReadById(anyId))
+            .Do(_ => throw new Exception("Database error"));
+
+        // Act
+        var result = Controller.DeleteById(anyId);
+
+        // Assert
+        var objectResult = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
+        RepositoryMock.DidNotReceive().Delete(Arg.Any<int>());
+    }
 }

@@ -92,7 +92,7 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
 
     public void Dispose()
     {
-        var items = Repository.Read();
+        var items = Repository.ReadAll();
         foreach (var item in items)
         {
             Repository.Delete(item.ToDoItemId);
