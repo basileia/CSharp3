@@ -19,12 +19,14 @@ namespace ToDoList.Test.UnitTests
             MapperMock.Map<ToDoItem>(createDto).Returns(createdItem);
             MapperMock.Map<ToDoItemGetResponseDto>(Arg.Any<ToDoItem>()).Returns(responseDto);
 
+            var controller = CreateController();
+
             // Act
-            var result = Controller.Create(createDto);
+            var result = controller.Create(createDto);
 
             // Assert
             var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
-            Assert.Equal(nameof(Controller.ReadById), createdAtActionResult.ActionName);
+            Assert.Equal(nameof(controller.ReadById), createdAtActionResult.ActionName);
             Assert.Equal(responseDto, createdAtActionResult.Value);
         }
 
@@ -39,8 +41,10 @@ namespace ToDoList.Test.UnitTests
             MapperMock.Map<ToDoItem>(createDto).Returns(createdItem);
             MapperMock.Map<ToDoItemGetResponseDto>(createdItem).Returns(expectedDto);
 
+            var controller = CreateController();
+
             // Act
-            var result = Controller.Create(createDto);
+            var result = controller.Create(createDto);
 
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
@@ -65,8 +69,10 @@ namespace ToDoList.Test.UnitTests
             MapperMock.Map<ToDoItem>(createDto).Returns(createdItem);
             MapperMock.Map<ToDoItemGetResponseDto>(createdItem).Returns(responseDto);
 
+            var controller = CreateController();
+
             // Act
-            var result = Controller.Create(createDto);
+            var result = controller.Create(createDto);
 
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
@@ -86,8 +92,10 @@ namespace ToDoList.Test.UnitTests
             RepositoryMock.When(x => x.Create(Arg.Any<ToDoItem>()))
                 .Do(x => throw new Exception("Database connection failed"));
 
+            var controller = CreateController();
+
             // Act
-            var result = Controller.Create(createDto);
+            var result = controller.Create(createDto);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(result);

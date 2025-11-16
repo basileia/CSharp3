@@ -15,8 +15,10 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         var existingItem = CreateValidToDoItem(id: existingId);
         RepositoryMock.ReadById(existingId).Returns(existingItem);
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.DeleteById(existingId);
+        var result = controller.DeleteById(existingId);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
@@ -32,8 +34,10 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         int nonExistentId = 999;
         RepositoryMock.ReadById(nonExistentId).Returns((ToDoItem?)null);
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.DeleteById(nonExistentId);
+        var result = controller.DeleteById(nonExistentId);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -57,8 +61,10 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
             .When(r => r.Delete(existingId))
             .Do(_ => throw new Exception("Database error"));
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.DeleteById(existingId);
+        var result = controller.DeleteById(existingId);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -74,8 +80,10 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
             .When(r => r.ReadById(anyId))
             .Do(_ => throw new Exception("Database error"));
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.DeleteById(anyId);
+        var result = controller.DeleteById(anyId);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);

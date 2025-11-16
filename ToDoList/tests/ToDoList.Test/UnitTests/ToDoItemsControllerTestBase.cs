@@ -10,15 +10,16 @@ using NSubstitute;
 
 public abstract class ToDoItemsControllerTestBase
 {
-    protected readonly IMapper MapperMock;
-    protected readonly ToDoItemsController Controller;
-    protected readonly IRepository<ToDoItem> RepositoryMock;
+    protected IMapper MapperMock;
+    protected IRepository<ToDoItem> RepositoryMock;
+
+    protected ToDoItemsController CreateController()
+        => new(MapperMock, RepositoryMock);
 
     protected ToDoItemsControllerTestBase()
     {
         MapperMock = Substitute.For<IMapper>();
         RepositoryMock = Substitute.For<IRepository<ToDoItem>>();
-        Controller = new ToDoItemsController(MapperMock, RepositoryMock);
     }
 
     protected static ToDoItemCreateRequestDto CreateValidCreateDto(
