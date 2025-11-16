@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -21,7 +22,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         var result = controller.DeleteById(existingId);
 
         // Assert
-        Assert.IsType<NoContentResult>(result);
+        result.Should().BeOfType<NoContentResult>();
 
         RepositoryMock.Received(1).ReadById(existingId);
         RepositoryMock.Received(1).Delete(existingId);
@@ -40,11 +41,18 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         var result = controller.DeleteById(nonExistentId);
 
         // Assert
-        var objectResult = Assert.IsType<ObjectResult>(result);
-        Assert.Equal(StatusCodes.Status404NotFound, objectResult.StatusCode);
+        var objectResult = result.Should()
+        .BeOfType<ObjectResult>()
+        .Which;
 
-        var problemDetails = Assert.IsType<ProblemDetails>(objectResult.Value);
-        Assert.Contains($"Úkol s ID {nonExistentId} nebyl nalezen", problemDetails.Detail);
+        objectResult.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+
+        var problemDetails = objectResult.Value.Should()
+            .BeOfType<ProblemDetails>()
+            .Which;
+
+        problemDetails.Detail.Should()
+            .Contain($"Úkol s ID {nonExistentId} nebyl nalezen");
 
         RepositoryMock.DidNotReceive().Delete(Arg.Any<int>());
     }
@@ -67,8 +75,11 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         var result = controller.DeleteById(existingId);
 
         // Assert
-        var objectResult = Assert.IsType<ObjectResult>(result);
-        Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
+        var objectResult = result.Should()
+        .BeOfType<ObjectResult>()
+        .Which;
+
+        objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
     }
 
     public void DeleteById_WhenReadThrows_ReturnsInternalServerError()
@@ -86,8 +97,12 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         var result = controller.DeleteById(anyId);
 
         // Assert
-        var objectResult = Assert.IsType<ObjectResult>(result);
-        Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
+        var objectResult = result.Should()
+        .BeOfType<ObjectResult>()
+        .Which;
+
+        objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+
         RepositoryMock.DidNotReceive().Delete(Arg.Any<int>());
     }
 }
