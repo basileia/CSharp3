@@ -1,4 +1,3 @@
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -19,8 +18,10 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
 
         RepositoryMock.ReadById(nonExistentId).Returns((ToDoItem?)null);
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.UpdateById(nonExistentId, updateDto);
+        var result = controller.UpdateById(nonExistentId, updateDto);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -42,8 +43,10 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
 
         RepositoryMock.ReadById(existingItem.ToDoItemId).Returns(existingItem);
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.UpdateById(existingItem.ToDoItemId, updateDto);
+        var result = controller.UpdateById(existingItem.ToDoItemId, updateDto);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
@@ -73,8 +76,10 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
                       existingItem.IsCompleted = updateDto.IsCompleted;
                   });
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.UpdateById(existingItem.ToDoItemId, updateDto);
+        var result = controller.UpdateById(existingItem.ToDoItemId, updateDto);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
@@ -97,8 +102,10 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
             .When(r => r.Update(existingItem))
             .Do(r => throw new Exception("Database error"));
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.UpdateById(existingItem.ToDoItemId, updateDto);
+        var result = controller.UpdateById(existingItem.ToDoItemId, updateDto);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -114,8 +121,10 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
 
         RepositoryMock.ReadById(itemId).Throws(new Exception("Database connection failed"));
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.UpdateById(itemId, updateDto);
+        var result = controller.UpdateById(itemId, updateDto);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);

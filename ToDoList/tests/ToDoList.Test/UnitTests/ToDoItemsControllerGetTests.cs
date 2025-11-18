@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 
@@ -23,8 +24,10 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
         RepositoryMock.ReadAll().Returns(toDoItems);
         MapperMock.Map<IEnumerable<ToDoItemGetResponseDto>>(toDoItems).Returns(expectedDtos);
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.Read();
+        var result = controller.Read();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -43,13 +46,31 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
         MapperMock.Map<IEnumerable<ToDoItemGetResponseDto>>(Arg.Any<IEnumerable<ToDoItem>>())
                     .Returns(CreateValidGetResponseDtoList());
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.Read();
+        var result = controller.Read();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(okResult.Value);
         RepositoryMock.Received(1).ReadAll();
+    }
+
+    [Fact]
+    public void Read_WhenRepositoryThrowsException_ReturnsInternalServerError()
+    {
+        // Arrange
+        RepositoryMock.ReadAll().Throws(new Exception());
+
+        var controller = CreateController();
+
+        // Act
+        var result = controller.Read();
+
+        // Assert
+        var objectResult = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, objectResult.StatusCode);
     }
 
     [Fact]
@@ -63,8 +84,10 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
         RepositoryMock.ReadById(itemId).Returns(toDoItem);
         MapperMock.Map<ToDoItemGetResponseDto>(toDoItem).Returns(expectedDto);
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.ReadById(itemId);
+        var result = controller.ReadById(itemId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -77,17 +100,39 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
     }
 
     [Fact]
-    public void ReadById_WhenItemDoesNotExist_ReturnsNotFound()
+    public void ReadById_WhenItemIsNull_ReturnsNotFound()
     {
         // Arrange
         int nonExistentId = 999;
         RepositoryMock.ReadById(nonExistentId).Returns((ToDoItem?)null);
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.ReadById(nonExistentId);
+        var result = controller.ReadById(nonExistentId);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
         Assert.Equal(StatusCodes.Status404NotFound, objectResult.StatusCode);
+    }
+
+    [Fact]
+    public void ReadById_UnhandledException_ReturnsInternalServerError()
+    {
+        // Arrange
+        int id = 1;
+
+        RepositoryMock
+            .ReadById(id)
+            .Throws(new Exception("Unexpected error"));
+
+        var controller = CreateController();
+
+        // Act
+        var result = controller.ReadById(id);
+
+        // Assert
+        var objectResult = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
     }
 }
