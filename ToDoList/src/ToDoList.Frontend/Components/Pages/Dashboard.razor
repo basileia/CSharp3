@@ -1,0 +1,57 @@
+@using Microsoft.VisualBasic
+@using ToDoList.Frontend.Models
+
+<h2>ToDo Items Dashboard</h2>
+<div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Název</th>
+                <th>Popis</th>
+                <th>Dokončeno</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in testData)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>@(item.IsCompleted ? "Ano" : "Ne")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private List<ToDoItemView> testData = new()
+{
+new ToDoItemView(1, "Nákup", "Koupit mléko a chléb", false),
+new ToDoItemView(2, "Úklid", "Vysát a vytřít obývák", true),
+new ToDoItemView(3, "Programování", "Dokončit Hangman projekt", false),
+new ToDoItemView(4, "Cvičení", "Krátký workout 20 minut", false),
+new ToDoItemView(5, "Telefonát", "Zavolat babičce", true)
+};
+
+    private List<ToDoItemView> SortedData = new List<ToDoItemView>();
+
+    protected override void OnInitialized()
+    {
+        OrderByName();
+    }
+
+    private void OrderByName()
+    {
+        SortedData = testData.OrderBy(item => item.Name).ToList();
+    }
+
+    private void OrderById()
+    {
+        SortedData = testData.OrderBy(item => item.Id).ToList();
+    }
+
+
+}

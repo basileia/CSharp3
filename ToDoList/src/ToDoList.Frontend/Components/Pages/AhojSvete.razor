@@ -1,0 +1,15 @@
+@page "/ahojSvete"
+
+<PageTitle>Ahoj světe.</PageTitle>
+
+<h1>Ahoj světe!</h1>
+<b>Moje první stránka.</b>
+
+<p>@Pozdrav()</p>
+
+@code {
+    public string Pozdrav()
+    {
+        return "Ahoj světe z kódu";
+    }
+}
