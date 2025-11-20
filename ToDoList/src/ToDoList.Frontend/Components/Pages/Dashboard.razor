@@ -2,29 +2,30 @@
 @using ToDoList.Frontend.Models
 
 <h2>ToDo Items Dashboard</h2>
-<div>
-    <table>
-        <thead>
+
+<table class="table">
+    <tr>
+        <th @onclick="OrderById" style="cursor:pointer">
+            ID @((sortByIdAsc ? "▲" : "▼"))
+        </th>
+        <th @onclick="OrderByName" style="cursor:pointer">
+            Název @((sortByNameAsc ? "▲" : "▼"))
+        </th>
+        <th>Popis</th>
+        <th>Dokončeno</th>
+    </tr>
+    <tbody>
+        @foreach (var item in SortedData)
+        {
             <tr>
-                <th>ID</th>
-                <th>Název</th>
-                <th>Popis</th>
-                <th>Dokončeno</th>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.Description</td>
+                <td>@(item.IsCompleted ? "Ano" : "Ne")</td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in testData)
-            {
-                <tr>
-                    <td>@item.Id</td>
-                    <td>@item.Name</td>
-                    <td>@item.Description</td>
-                    <td>@(item.IsCompleted ? "Ano" : "Ne")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+        }
+    </tbody>
+</table>
 
 @code {
     private List<ToDoItemView> testData = new()
@@ -37,6 +38,8 @@ new ToDoItemView(5, "Telefonát", "Zavolat babičce", true)
 };
 
     private List<ToDoItemView> SortedData = new List<ToDoItemView>();
+    private bool sortByIdAsc = true;
+    private bool sortByNameAsc = true;
 
     protected override void OnInitialized()
     {
@@ -45,13 +48,21 @@ new ToDoItemView(5, "Telefonát", "Zavolat babičce", true)
 
     private void OrderByName()
     {
-        SortedData = testData.OrderBy(item => item.Name).ToList();
+        SortedData = sortByNameAsc
+        ? testData.OrderBy(item => item.Name).ToList()
+        : testData.OrderByDescending(item => item.Name).ToList();
+
+        sortByNameAsc = !sortByNameAsc;
+        sortByIdAsc = true;
     }
 
     private void OrderById()
     {
-        SortedData = testData.OrderBy(item => item.Id).ToList();
+        SortedData = sortByIdAsc
+        ? testData.OrderBy(item => item.Id).ToList()
+        : testData.OrderByDescending(item => item.Id).ToList();
+
+        sortByIdAsc = !sortByIdAsc;
+        sortByNameAsc = true;
     }
-
-
 }
