@@ -1,0 +1,57 @@
+@page "/calculator"
+@namespace Calculator.BlazorApp.Components.Pages
+@using Calculator.BlazorApp.Services
+@rendermode InteractiveServer
+@inject CalculatorService CalcService
+
+<PageTitle>Kalkulačka</PageTitle>
+
+<h3 class="text-center mt-5">Kalkulačka</h3>
+
+<div class="calculator">
+    <div class="display @(CalcService.HasError ? "error" : "")">
+        @CalcService.Display
+    </div>
+
+    <table class="calculator-buttons">
+        <tr>
+            <td><button @onclick="() => CalcService.ClearEntry()">CE</button></td>
+            <td><button @onclick="() => CalcService.Clear()">C</button></td>
+            <td><button @onclick='() => CalcService.SetOperation("/")'>/</button></td>
+            <td><button @onclick='() => CalcService.SetOperation("*")'>*</button></td>
+        </tr>
+        <tr>
+            <td><button @onclick='() => AddNumber("7")'>7</button></td>
+            <td><button @onclick='() => AddNumber("8")'>8</button></td>
+            <td><button @onclick='() => AddNumber("9")'>9</button></td>
+            <td><button @onclick='() => CalcService.SetOperation("-")'>-</button></td>
+        </tr>
+        <tr>
+            <td><button @onclick='() => AddNumber("4")'>4</button></td>
+            <td><button @onclick='() => AddNumber("5")'>5</button></td>
+            <td><button @onclick='() => AddNumber("6")'>6</button></td>
+            <td><button @onclick='() => CalcService.SetOperation("+")'>+</button></td>
+        </tr>
+        <tr>
+            <td><button @onclick='() => AddNumber("1")'>1</button></td>
+            <td><button @onclick='() => AddNumber("2")'>2</button></td>
+            <td><button @onclick='() => AddNumber("3")'>3</button></td>
+            <td rowspan="2">
+                <button class="tall-button" @onclick="() => CalcService.Calculate()">=</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button class="wide-button" @onclick='() => AddNumber("0")'>0</button>
+            </td>
+            <td><button @onclick='() => AddNumber(",")'>.</button></td>
+        </tr>
+    </table>
+</div>
+
+@code {
+    private void AddNumber(string number)
+    {
+        CalcService.AppendNumber(number);
+    }
+}
