@@ -60,7 +60,7 @@ namespace Calculator.BlazorApp.Services
             {
                 _storedValue = PerformOperation(_storedValue, currentNumber, _pendingOperation);
 
-                if (_errorMessage != null)
+                if (HasError)
                 {
                     _state = CalculatorState.Error;
                     return;
