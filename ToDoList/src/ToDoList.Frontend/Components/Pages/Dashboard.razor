@@ -1,5 +1,8 @@
 @using Microsoft.VisualBasic
+@using ToDoList.Frontend.Clients
 @using ToDoList.Frontend.Models
+
+@inject IToDoItemsClient toDoItemsClient
 
 <h2>ToDo Items Dashboard</h2>
 
@@ -41,9 +44,10 @@ new ToDoItemView(5, "Telefonát", "Zavolat babičce", true)
     private bool sortByIdAsc = true;
     private bool sortByNameAsc = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        OrderByName();
+        //OrderByName();
+        SortedData = await toDoItemsClient.ReadItemsAsync();
     }
 
     private void OrderByName()

@@ -1,9 +1,14 @@
+using ToDoList.Frontend.Clients;
 using ToDoList.Frontend.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5190/") });
+builder.Services.AddScoped<IToDoItemsClient, ToDoItemsClient>();
+
 
 var app = builder.Build();
 
