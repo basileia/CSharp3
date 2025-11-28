@@ -3,35 +3,35 @@ namespace ToDoList.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using ToDoList.Domain.Models;
 
-public class ToDoItemsRepository(ToDoItemsContext context) : IRepository<ToDoItem>
+public class ToDoItemsRepository(ToDoItemsContext context) : IRepositoryAsync<ToDoItem>
 {
     private readonly ToDoItemsContext context = context;
     private readonly DbSet<ToDoItem> dbSet = context.Set<ToDoItem>();
 
-    public void Create(ToDoItem item)
+    public async Task CreateAsync(ToDoItem item)
     {
-        context.ToDoItems.Add(item);
-        context.SaveChanges();
+        await dbSet.AddAsync(item);
+        await context.SaveChangesAsync();
     }
 
-    public IEnumerable<ToDoItem> ReadAll() => dbSet.AsNoTracking().ToList();
+    public async Task<IEnumerable<ToDoItem>> ReadAllAsync() => await dbSet.AsNoTracking().ToListAsync();
 
-    public ToDoItem? ReadById(int id) => dbSet.AsNoTracking().FirstOrDefault(item => item.ToDoItemId == id);
+    public async Task<ToDoItem?> ReadByIdAsync(int id) => await dbSet.AsNoTracking().FirstOrDefaultAsync(item => item.ToDoItemId == id);
 
-    public void Update(ToDoItem item)
+    public async Task UpdateAsync(ToDoItem item)
     {
-        var foundItem = context.ToDoItems.Find(item.ToDoItemId) ?? throw new ArgumentOutOfRangeException("Item not found");
-        context.Entry(item).CurrentValues.SetValues(item);
-        context.SaveChanges();
+        context.Update(item);
+        await context.SaveChangesAsync();
     }
 
-    public void Delete(int id)
+    public async Task DeleteAsync(int id)
     {
-        var item = dbSet.Find(id);
+        var item = await dbSet.FindAsync(id) ?? throw new KeyNotFoundException($"ToDoItem with ID {id} not found");
+
         if (item != null)
         {
             dbSet.Remove(item);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
     }
 }

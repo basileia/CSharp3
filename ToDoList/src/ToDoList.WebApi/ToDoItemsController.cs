@@ -5,19 +5,18 @@ using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using AutoMapper;
 using ToDoList.Persistence.Repositories;
-using System;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repository) : BaseApiController(mapper, repository)
+public class ToDoItemsController(IMapper mapper, IRepositoryAsync<ToDoItem> repository) : BaseApiController<ToDoItem>(mapper, repository)
 {
     [HttpPost]
-    public IActionResult Create(ToDoItemCreateRequestDto request)
+    public async Task<IActionResult> Create(ToDoItemCreateRequestDto request)
     {
-        return ExecuteWithExceptionHandling(() =>
+        return await ExecuteWithExceptionHandling(async () =>
             {
                 var item = Mapper.Map<ToDoItem>(request);
-                repository.Create(item);
+                await Repository.CreateAsync(item);
 
                 var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
 
@@ -26,22 +25,22 @@ public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repositor
     }
 
     [HttpGet]
-    public IActionResult Read()
+    public async Task<IActionResult> Read()
     {
-        return ExecuteWithExceptionHandling(() =>
-     {
-         var items = Repository.ReadAll();
-         var response = Mapper.Map<IEnumerable<ToDoItemGetResponseDto>>(items);
-         return Ok(response);
-     });
+        return await ExecuteWithExceptionHandling(async () =>
+            {
+                var items = await Repository.ReadAllAsync();
+                var response = Mapper.Map<IEnumerable<ToDoItemGetResponseDto>>(items);
+                return Ok(response);
+            });
     }
 
     [HttpGet("{toDoItemId:int}")]
-    public IActionResult ReadById(int toDoItemId)
+    public async Task<IActionResult> ReadById(int toDoItemId)
     {
-        return ExecuteWithExceptionHandling(() =>
+        return await ExecuteWithExceptionHandling(async () =>
             {
-                var item = Repository.ReadById(toDoItemId);
+                var item = await Repository.ReadByIdAsync(toDoItemId);
 
                 if (item == null)
                 {
@@ -57,11 +56,12 @@ public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repositor
     }
 
     [HttpPut("{toDoItemId:int}")]
-    public IActionResult UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
+    public async Task<IActionResult> UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
     {
-        return ExecuteWithExceptionHandling(() =>
+        return await ExecuteWithExceptionHandling(async () =>
             {
-                var existingItem = Repository.ReadById(toDoItemId);
+                var existingItem = await Repository.ReadByIdAsync(toDoItemId);
+
                 if (existingItem == null)
                 {
                     return Problem(
@@ -71,17 +71,18 @@ public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repositor
                 }
 
                 Mapper.Map(request, existingItem);
-                Repository.Update(existingItem);
+                await Repository.UpdateAsync(existingItem);
                 return NoContent();
             });
     }
 
     [HttpDelete("{toDoItemId:int}")]
-    public IActionResult DeleteById(int toDoItemId)
+    public async Task<IActionResult> DeleteById(int toDoItemId)
     {
-        return ExecuteWithExceptionHandling(() =>
+        return await ExecuteWithExceptionHandling(async () =>
             {
-                var toDoItem = Repository.ReadById(toDoItemId);
+                var toDoItem = await Repository.ReadByIdAsync(toDoItemId);
+
                 if (toDoItem == null)
                 {
                     return Problem(
@@ -90,7 +91,7 @@ public class ToDoItemsController(IMapper mapper, IRepository<ToDoItem> repositor
                     );
                 }
 
-                Repository.Delete(toDoItemId);
+                await Repository.DeleteAsync(toDoItemId);
                 return NoContent();
             });
     }

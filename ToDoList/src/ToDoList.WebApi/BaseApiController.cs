@@ -3,25 +3,24 @@ namespace ToDoList.WebApi;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using ToDoList.Persistence.Repositories;
-using ToDoList.Domain.Models;
 
 [ApiController]
-public class BaseApiController : ControllerBase
+public class BaseApiController<T> : ControllerBase where T : class
 {
     protected IMapper Mapper { get; }
-    protected IRepository<ToDoItem> Repository { get; }
+    protected IRepositoryAsync<T> Repository { get; }
 
-    protected BaseApiController(IMapper mapper, IRepository<ToDoItem> repository)
+    protected BaseApiController(IMapper mapper, IRepositoryAsync<T> repository)
     {
         Mapper = mapper;
         Repository = repository;
     }
 
-    protected IActionResult ExecuteWithExceptionHandling(Func<IActionResult> action)
+    protected async Task<IActionResult> ExecuteWithExceptionHandling(Func<Task<IActionResult>> action)
     {
         try
         {
-            return action();
+            return await action();
         }
         catch (Exception ex)
         {
