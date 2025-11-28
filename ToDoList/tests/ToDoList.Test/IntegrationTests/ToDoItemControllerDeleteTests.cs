@@ -6,47 +6,50 @@ using Microsoft.AspNetCore.Mvc;
 public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
 {
     [Fact]
-    public void DeleteById_WhenItemExists_ReturnsNoContent_AndRemovesItem()
+    public async Task DeleteById_WhenItemExists_ReturnsNoContent_AndRemovesItem()
     {
         // Arrange
-        var existingItem = AddItemToDb(CreateValidToDoItem("Úkol k odstranění", "Test", false));
+        var existingItem = await AddItemToDbAsync(CreateValidToDoItem("Úkol k odstranění", "Test", false));
+        var controller = CreateController();
 
         // Act
-        var result = Controller.DeleteById(existingItem.ToDoItemId);
+        var result = await controller.DeleteById(existingItem.ToDoItemId);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
 
-        var deletedItem = GetItemFromDb(existingItem.ToDoItemId);
+        var deletedItem = await GetItemFromDbAsync(existingItem.ToDoItemId);
         Assert.Null(deletedItem);
     }
 
     [Fact]
-    public void DeleteById_WhenItemDoesNotExist_ReturnsNotFound()
+    public async Task DeleteById_WhenItemDoesNotExist_ReturnsNotFound()
     {
         // Arrange
         const int nonExistentId = -1;
+        var controller = CreateController();
 
         // Act
-        var result = Controller.DeleteById(nonExistentId);
+        var result = await controller.DeleteById(nonExistentId);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
         Assert.Equal(StatusCodes.Status404NotFound, objectResult.StatusCode);
 
-        var items = Repository.ReadAll();
+        var items = await Repository.ReadAllAsync();
         Assert.All(items, i => Assert.NotEqual(nonExistentId, i.ToDoItemId));
     }
 
     [Fact]
-    public void DeleteById_WhenCalledTwiceOnSameItem_SecondCallReturnsNotFound()
+    public async Task DeleteById_WhenCalledTwiceOnSameItem_SecondCallReturnsNotFound()
     {
         // Arrange
-        var item = AddItemToDb(CreateValidToDoItem("Duplicitní smazání", "Test", false));
+        var item = await AddItemToDbAsync(CreateValidToDoItem("Duplicitní smazání", "Test", false));
+        var controller = CreateController();
 
         // Act
-        var firstResult = Controller.DeleteById(item.ToDoItemId);
-        var secondResult = Controller.DeleteById(item.ToDoItemId);
+        var firstResult = await controller.DeleteById(item.ToDoItemId);
+        var secondResult = await controller.DeleteById(item.ToDoItemId);
 
         // Assert
         Assert.IsType<NoContentResult>(firstResult);

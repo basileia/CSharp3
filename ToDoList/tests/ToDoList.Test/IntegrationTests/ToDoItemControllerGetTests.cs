@@ -7,14 +7,16 @@ using ToDoList.Domain.DTOs;
 public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
 {
     [Fact]
-    public void Read_ReturnsAllItems()
+    public async Task Read_ReturnsAllItems()
     {
         // Arrange
-        var item1 = AddItemToDb(CreateValidToDoItem(name: "Task 1"));
-        var item2 = AddItemToDb(CreateValidToDoItem(name: "Task 2"));
+        var item1 = await AddItemToDbAsync(CreateValidToDoItem(name: "Task 1"));
+        var item2 = await AddItemToDbAsync(CreateValidToDoItem(name: "Task 2"));
+
+        var controller = CreateController();
 
         // Act
-        var result = Controller.Read();
+        var result = await controller.Read();
 
         if (result is ObjectResult obj)
         {
@@ -34,18 +36,20 @@ public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
         Assert.Contains(actualDtos, dto => dto.Name == "Task 2");
 
         // Cleanup
-        RemoveItemFromDb(item1.ToDoItemId);
-        RemoveItemFromDb(item2.ToDoItemId);
+        await RemoveItemFromDbAsync(item1.ToDoItemId);
+        await RemoveItemFromDbAsync(item2.ToDoItemId);
     }
 
     [Fact]
-    public void ReadById_WhenItemExists_ReturnsOkWithMappedItem()
+    public async Task ReadById_WhenItemExists_ReturnsOkWithMappedItem()
     {
         // Arrange
-        var newItem = AddItemToDb(CreateValidToDoItem(name: "Integration Test Item"));
+        var newItem = await AddItemToDbAsync(CreateValidToDoItem(name: "Integration Test Item"));
+
+        var controller = CreateController();
 
         // Act
-        var result = Controller.ReadById(newItem.ToDoItemId);
+        var result = await controller.ReadById(newItem.ToDoItemId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -57,17 +61,18 @@ public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
         Assert.Equal(newItem.IsCompleted, dto.IsCompleted);
 
         // Cleanup
-        RemoveItemFromDb(newItem.ToDoItemId);
+        await RemoveItemFromDbAsync(newItem.ToDoItemId);
     }
 
     [Fact]
-    public void ReadById_WhenItemDoesNotExist_ReturnsNotFound()
+    public async Task ReadById_WhenItemDoesNotExist_ReturnsNotFound()
     {
         // Arrange
         int nonExistentId = -1;
+        var controller = CreateController();
 
         // Act
-        var result = Controller.ReadById(nonExistentId);
+        var result = await controller.ReadById(nonExistentId);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -77,13 +82,14 @@ public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
     [Theory]
     [InlineData("Buy milk", "Go to store")]
     [InlineData("Write code", "Finish integration test")]
-    public void ReadById_WithValidItems_ReturnsOkWithCorrectData(string name, string description)
+    public async Task ReadById_WithValidItems_ReturnsOkWithCorrectData(string name, string description)
     {
         // Arrange
-        var newItem = AddItemToDb(CreateValidToDoItem(name: name, description: description));
+        var newItem = await AddItemToDbAsync(CreateValidToDoItem(name: name, description: description));
+        var controller = CreateController();
 
         // Act
-        var result = Controller.ReadById(newItem.ToDoItemId);
+        var result = await controller.ReadById(newItem.ToDoItemId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -95,6 +101,6 @@ public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
         Assert.Equal(newItem.IsCompleted, dto.IsCompleted);
 
         // Cleanup
-        RemoveItemFromDb(newItem.ToDoItemId);
+        await RemoveItemFromDbAsync(newItem.ToDoItemId);
     }
 }

@@ -10,7 +10,7 @@ namespace ToDoList.Test.UnitTests;
 public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
 {
     [Fact]
-    public void Read_ReturnsAllItems()
+    public async Task Read_ReturnsAllItems()
     {
         // Arrange
         var toDoItems = new List<ToDoItem>
@@ -21,52 +21,52 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
 
         var expectedDtos = CreateValidGetResponseDtoList();
 
-        RepositoryMock.ReadAll().Returns(toDoItems);
+        RepositoryMock.ReadAllAsync().Returns(Task.FromResult<IEnumerable<ToDoItem>>(toDoItems));
         MapperMock.Map<IEnumerable<ToDoItemGetResponseDto>>(toDoItems).Returns(expectedDtos);
 
         var controller = CreateController();
 
         // Act
-        var result = controller.Read();
+        var result = await controller.Read();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var actualDtos = Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(okResult.Value);
 
         Assert.Equal(expectedDtos.Count, ((List<ToDoItemGetResponseDto>)actualDtos).Count);
-        RepositoryMock.Received(1).ReadAll();
+        await RepositoryMock.Received(1).ReadAllAsync();
     }
 
     [Fact]
-    public void Get_ReadWhenSomeItemAvailable_ReturnsOk()
+    public async Task Get_ReadWhenSomeItemAvailable_ReturnsOk()
     {
         // Arrange
         var someItem = new ToDoItem { Name = "Some Task", Description = "Some Description", IsCompleted = false };
-        RepositoryMock.ReadAll().Returns([someItem]);
+        RepositoryMock.ReadAllAsync().Returns(Task.FromResult<IEnumerable<ToDoItem>>([someItem]));
         MapperMock.Map<IEnumerable<ToDoItemGetResponseDto>>(Arg.Any<IEnumerable<ToDoItem>>())
                     .Returns(CreateValidGetResponseDtoList());
 
         var controller = CreateController();
 
         // Act
-        var result = controller.Read();
+        var result = await controller.Read();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(okResult.Value);
-        RepositoryMock.Received(1).ReadAll();
+        await RepositoryMock.Received(1).ReadAllAsync();
     }
 
     [Fact]
-    public void Read_WhenRepositoryThrowsException_ReturnsInternalServerError()
+    public async Task Read_WhenRepositoryThrowsException_ReturnsInternalServerError()
     {
         // Arrange
-        RepositoryMock.ReadAll().Throws(new Exception());
+        RepositoryMock.ReadAllAsync().ThrowsAsync(new Exception("Unexpected error"));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.Read();
+        var result = await controller.Read();
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -74,20 +74,20 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
     }
 
     [Fact]
-    public void ReadById_WhenItemExists_ReturnsOkWithMappedItem()
+    public async Task ReadById_WhenItemExists_ReturnsOkWithMappedItem()
     {
         // Arrange
         int itemId = 1;
         var toDoItem = CreateValidToDoItem();
         var expectedDto = CreateValidGetResponseDto(id: itemId);
 
-        RepositoryMock.ReadById(itemId).Returns(toDoItem);
+        RepositoryMock.ReadByIdAsync(itemId).Returns(Task.FromResult<ToDoItem?>(toDoItem));
         MapperMock.Map<ToDoItemGetResponseDto>(toDoItem).Returns(expectedDto);
 
         var controller = CreateController();
 
         // Act
-        var result = controller.ReadById(itemId);
+        var result = await controller.ReadById(itemId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -100,16 +100,16 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
     }
 
     [Fact]
-    public void ReadById_WhenItemIsNull_ReturnsNotFound()
+    public async Task ReadById_WhenItemIsNull_ReturnsNotFound()
     {
         // Arrange
         int nonExistentId = 999;
-        RepositoryMock.ReadById(nonExistentId).Returns((ToDoItem?)null);
+        RepositoryMock.ReadByIdAsync(nonExistentId).Returns(Task.FromResult<ToDoItem?>(null));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.ReadById(nonExistentId);
+        var result = await controller.ReadById(nonExistentId);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -117,19 +117,19 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
     }
 
     [Fact]
-    public void ReadById_UnhandledException_ReturnsInternalServerError()
+    public async Task ReadById_UnhandledException_ReturnsInternalServerError()
     {
         // Arrange
         int id = 1;
 
         RepositoryMock
-            .ReadById(id)
-            .Throws(new Exception("Unexpected error"));
+            .ReadByIdAsync(id)
+            .ThrowsAsync(new Exception("Unexpected error"));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.ReadById(id);
+        var result = await controller.ReadById(id);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);

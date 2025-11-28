@@ -9,7 +9,7 @@ namespace ToDoList.Test.UnitTests
     public class ToDoItemsControllerCreateTests : ToDoItemsControllerTestBase
     {
         [Fact]
-        public void Create_WithValidDto_ReturnsCreatedAtAction()
+        public async Task Create_WithValidDto_ReturnsCreatedAtAction()
         {
             // Arrange
             var createDto = CreateValidCreateDto();
@@ -22,7 +22,7 @@ namespace ToDoList.Test.UnitTests
             var controller = CreateController();
 
             // Act
-            var result = controller.Create(createDto);
+            var result = await controller.Create(createDto);
 
             // Assert
             var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
@@ -31,7 +31,7 @@ namespace ToDoList.Test.UnitTests
         }
 
         [Fact]
-        public void Create_WithValidDto_ReturnsCreatedItemInResponse()
+        public async Task Create_WithValidDto_ReturnsCreatedItemInResponse()
         {
             // Arrange
             var createDto = CreateValidCreateDto();
@@ -44,7 +44,7 @@ namespace ToDoList.Test.UnitTests
             var controller = CreateController();
 
             // Act
-            var result = controller.Create(createDto);
+            var result = await controller.Create(createDto);
 
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
@@ -55,11 +55,11 @@ namespace ToDoList.Test.UnitTests
             Assert.Equal(expectedDto.Description, actualDto.Description);
             Assert.Equal(expectedDto.IsCompleted, actualDto.IsCompleted);
 
-            RepositoryMock.Received(1).Create(Arg.Any<ToDoItem>());
+            await RepositoryMock.Received(1).CreateAsync(Arg.Any<ToDoItem>());
         }
 
         [Fact]
-        public void Create_ReturnsCorrectRouteValues()
+        public async Task Create_ReturnsCorrectRouteValues()
         {
             // Arrange
             var createDto = CreateValidCreateDto();
@@ -72,7 +72,7 @@ namespace ToDoList.Test.UnitTests
             var controller = CreateController();
 
             // Act
-            var result = controller.Create(createDto);
+            var result = await controller.Create(createDto);
 
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
@@ -82,20 +82,20 @@ namespace ToDoList.Test.UnitTests
         }
 
         [Fact]
-        public void Create_WhenRepositoryThrowsException_ReturnsInternalServerError()
+        public async Task Create_WhenRepositoryThrowsException_ReturnsInternalServerError()
         {
             // Arrange
             var createDto = CreateValidCreateDto();
             var createdItem = CreateValidToDoItem();
 
             MapperMock.Map<ToDoItem>(createDto).Returns(createdItem);
-            RepositoryMock.When(x => x.Create(Arg.Any<ToDoItem>()))
+            RepositoryMock.When(x => x.CreateAsync(Arg.Any<ToDoItem>()))
                 .Do(x => throw new Exception("Database connection failed"));
 
             var controller = CreateController();
 
             // Act
-            var result = controller.Create(createDto);
+            var result = await controller.Create(createDto);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(result);

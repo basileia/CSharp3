@@ -9,36 +9,36 @@ namespace ToDoList.Test.UnitTests;
 public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
 {
     [Fact]
-    public void DeleteById_WhenItemExists_ReturnsNoContent()
+    public async Task DeleteById_WhenItemExists_ReturnsNoContent()
     {
         // Arrange
         int existingId = 1;
         var existingItem = CreateValidToDoItem(id: existingId);
-        RepositoryMock.ReadById(existingId).Returns(existingItem);
+        RepositoryMock.ReadByIdAsync(existingId).Returns(Task.FromResult<ToDoItem?>(existingItem));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.DeleteById(existingId);
+        var result = await controller.DeleteById(existingId);
 
         // Assert
         result.Should().BeOfType<NoContentResult>();
 
-        RepositoryMock.Received(1).ReadById(existingId);
-        RepositoryMock.Received(1).Delete(existingId);
+        await RepositoryMock.Received(1).ReadByIdAsync(existingId);
+        await RepositoryMock.Received(1).DeleteAsync(existingId);
     }
 
     [Fact]
-    public void DeleteById_WhenItemDoesNotExist_ReturnsNotFound()
+    public async Task DeleteById_WhenItemDoesNotExist_ReturnsNotFound()
     {
         // Arrange
         int nonExistentId = 999;
-        RepositoryMock.ReadById(nonExistentId).Returns((ToDoItem?)null);
+        RepositoryMock.ReadByIdAsync(nonExistentId).Returns(Task.FromResult<ToDoItem?>(null));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.DeleteById(nonExistentId);
+        var result = await controller.DeleteById(nonExistentId);
 
         // Assert
         var objectResult = result.Should()
@@ -54,25 +54,25 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         problemDetails.Detail.Should()
             .Contain($"Úkol s ID {nonExistentId} nebyl nalezen");
 
-        RepositoryMock.DidNotReceive().Delete(Arg.Any<int>());
+        await RepositoryMock.DidNotReceive().DeleteAsync(Arg.Any<int>());
     }
 
     [Fact]
-    public void DeleteById_WhenDeleteThrows_ReturnsInternalServerError()
+    public async Task DeleteById_WhenDeleteThrows_ReturnsInternalServerError()
     {
         // Arrange
         int existingId = 1;
         var existingItem = CreateValidToDoItem(id: existingId);
 
-        RepositoryMock.ReadById(existingId).Returns(existingItem);
+        RepositoryMock.ReadByIdAsync(existingId).Returns(Task.FromResult<ToDoItem?>(existingItem));
         RepositoryMock
-            .When(r => r.Delete(existingId))
+            .When(r => r.DeleteAsync(existingId))
             .Do(_ => throw new Exception("Database error"));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.DeleteById(existingId);
+        var result = await controller.DeleteById(existingId);
 
         // Assert
         var objectResult = result.Should()
@@ -82,19 +82,19 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
     }
 
-    public void DeleteById_WhenReadThrows_ReturnsInternalServerError()
+    public async Task DeleteById_WhenReadThrows_ReturnsInternalServerError()
     {
         // Arrange
         int anyId = 1;
 
         RepositoryMock
-            .When(r => r.ReadById(anyId))
+            .When(r => r.ReadByIdAsync(anyId))
             .Do(_ => throw new Exception("Database error"));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.DeleteById(anyId);
+        var result = await controller.DeleteById(anyId);
 
         // Assert
         var objectResult = result.Should()
@@ -103,6 +103,6 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
 
         objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
 
-        RepositoryMock.DidNotReceive().Delete(Arg.Any<int>());
+        await RepositoryMock.DidNotReceive().DeleteAsync(Arg.Any<int>());
     }
 }

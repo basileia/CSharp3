@@ -2,41 +2,42 @@ namespace ToDoList.Test.IntegrationTests;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ToDoList.Domain.DTOs;
 
 public class ToDoItemsControllerCreateTests : ToDoItemsControllerTestBase
 {
     [Fact]
-    public void Create_WithValidDto_ReturnsCreatedAtAction()
+    public async Task Create_WithValidDto_ReturnsCreatedAtAction()
     {
         // Arrange
         var createDto = CreateValidCreateDto();
+        var controller = CreateController();
 
         // Act
-        var result = Controller.Create(createDto);
+        var result = await controller.Create(createDto);
 
         // Assert
         var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result);
         var createdDto = Assert.IsType<ToDoItemGetResponseDto>(createdAtActionResult.Value);
-        Assert.Equal(nameof(Controller.ReadById), createdAtActionResult.ActionName);
+        Assert.Equal(nameof(controller.ReadById), createdAtActionResult.ActionName);
 
         // Cleanup
-        var createdItem = Repository.ReadById(createdDto.ToDoItemId);
+        var createdItem = await Repository.ReadByIdAsync(createdDto.ToDoItemId);
         if (createdItem != null)
         {
-            RemoveItemFromDb(createdItem.ToDoItemId);
+            await RemoveItemFromDbAsync(createdItem.ToDoItemId);
         }
     }
 
     [Fact]
-    public void Create_WithValidDto_ReturnsCreatedItemInResponse()
+    public async Task Create_WithValidDto_ReturnsCreatedItemInResponse()
     {
         // Arrange
         var createDto = CreateValidCreateDto();
+        var controller = CreateController();
 
         // Act
-        var result = Controller.Create(createDto);
+        var result = await controller.Create(createDto);
 
         // Assert
         var createdResult = Assert.IsType<CreatedAtActionResult>(result);
@@ -48,17 +49,18 @@ public class ToDoItemsControllerCreateTests : ToDoItemsControllerTestBase
         Assert.True(actualDto.ToDoItemId > 0);
 
         // Cleanup
-        RemoveItemFromDb(actualDto.ToDoItemId);
+        await RemoveItemFromDbAsync(actualDto.ToDoItemId);
     }
 
     [Fact]
-    public void Create_WithNullName_ReturnsObjectResult500()
+    public async Task Create_WithNullName_ReturnsObjectResult500()
     {
         // Arrange
         var createDto = new ToDoItemCreateRequestDto(Name: null!, Description: "", IsCompleted: false);
+        var controller = CreateController();
 
         // Act
-        var result = Controller.Create(createDto);
+        var result = await controller.Create(createDto);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);

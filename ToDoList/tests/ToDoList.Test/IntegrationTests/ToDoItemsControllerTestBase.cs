@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 public abstract class ToDoItemsControllerTestBase : IDisposable
 {
     protected IMapper Mapper { get; }
-    protected IRepository<ToDoItem> Repository { get; }
+    protected IRepositoryAsync<ToDoItem> Repository { get; }
     protected ToDoItemsController Controller { get; }
     protected ToDoItemsContext DbContext { get; }
     private readonly string dbPath = "../../../IntegrationTests/data/localdb_test.db";
@@ -20,7 +20,7 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
     protected ToDoItemsControllerTestBase()
     {
         string className = GetType().Name;
-        dbPath = $"../../../IntegrationTests/data/localdb_test_{className}.db";
+        dbPath = $"../../../IntegrationTests/data/localdb_test_{className}_{Guid.NewGuid()}.db";
 
         string? folder = Path.GetDirectoryName(dbPath);
         if (!Directory.Exists(folder))
@@ -42,22 +42,27 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
         Controller = new ToDoItemsController(Mapper, Repository);
     }
 
-    protected ToDoItem AddItemToDb(ToDoItem item)
+    protected ToDoItemsController CreateController()
     {
-        Repository.Create(item);
+        var repository = new ToDoItemsRepository(DbContext);
+        return new ToDoItemsController(Mapper, repository);
+    }
+    protected async Task<ToDoItem> AddItemToDbAsync(ToDoItem item)
+    {
+        await Repository.CreateAsync(item);
         DbContext.Entry(item).State = EntityState.Detached;
         return item;
     }
 
-    protected ToDoItem? GetItemFromDb(int id) =>
-        Repository.ReadById(id);
+    protected async Task<ToDoItem?> GetItemFromDbAsync(int id) =>
+        await Repository.ReadByIdAsync(id);
 
-    protected void RemoveItemFromDb(int id)
+    protected async Task RemoveItemFromDbAsync(int id)
     {
-        var item = Repository.ReadById(id);
+        var item = await Repository.ReadByIdAsync(id);
         if (item != null)
         {
-            Repository.Delete(item.ToDoItemId);
+            await Repository.DeleteAsync(item.ToDoItemId);
         }
     }
 
@@ -92,10 +97,10 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
 
     public void Dispose()
     {
-        var items = Repository.ReadAll();
+        var items = Repository.ReadAllAsync().GetAwaiter().GetResult();
         foreach (var item in items)
         {
-            Repository.Delete(item.ToDoItemId);
+            Repository.DeleteAsync(item.ToDoItemId).GetAwaiter().GetResult();
         }
 
         GC.SuppressFinalize(this);
