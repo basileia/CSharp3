@@ -8,9 +8,9 @@ using ToDoList.Persistence.Repositories;
 public class BaseApiController<T> : ControllerBase where T : class
 {
     protected IMapper Mapper { get; }
-    protected IRepositoryAsync<T> Repository { get; }
+    protected IRepositoryAsync Repository { get; }
 
-    protected BaseApiController(IMapper mapper, IRepositoryAsync<T> repository)
+    protected BaseApiController(IMapper mapper, IRepositoryAsync repository)
     {
         Mapper = mapper;
         Repository = repository;

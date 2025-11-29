@@ -8,7 +8,7 @@ using ToDoList.Persistence.Repositories;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ToDoItemsController(IMapper mapper, IRepositoryAsync<ToDoItem> repository) : BaseApiController<ToDoItem>(mapper, repository)
+public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository) : BaseApiController<ToDoItem>(mapper, repository)
 {
     [HttpPost]
     public async Task<IActionResult> Create(ToDoItemCreateRequestDto request)
@@ -29,7 +29,7 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync<ToDoItem> repo
     {
         return await ExecuteWithExceptionHandling(async () =>
             {
-                var items = await Repository.ReadAllAsync();
+                var items = await Repository.ReadAllIncludingCategoryAsync();
                 var response = Mapper.Map<IEnumerable<ToDoItemGetResponseDto>>(items);
                 return Ok(response);
             });
@@ -40,7 +40,7 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync<ToDoItem> repo
     {
         return await ExecuteWithExceptionHandling(async () =>
             {
-                var item = await Repository.ReadByIdAsync(toDoItemId);
+                var item = await Repository.ReadByIdIncludingCategoryAsync(toDoItemId);
 
                 if (item == null)
                 {
@@ -60,7 +60,7 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync<ToDoItem> repo
     {
         return await ExecuteWithExceptionHandling(async () =>
             {
-                var existingItem = await Repository.ReadByIdAsync(toDoItemId);
+                var existingItem = await Repository.ReadByIdIncludingCategoryAsync(toDoItemId);
 
                 if (existingItem == null)
                 {
@@ -91,7 +91,7 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync<ToDoItem> repo
                     );
                 }
 
-                await Repository.DeleteAsync(toDoItemId);
+                await Repository.DeleteAsync(toDoItem);
                 return NoContent();
             });
     }
