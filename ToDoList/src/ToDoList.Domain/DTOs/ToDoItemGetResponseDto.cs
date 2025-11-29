@@ -4,5 +4,6 @@ public record ToDoItemGetResponseDto(
     int ToDoItemId,
     string Name,
     string Description,
-    bool IsCompleted
-    );
+    bool IsCompleted,
+    int? CategoryId,
+    string? CategoryName);

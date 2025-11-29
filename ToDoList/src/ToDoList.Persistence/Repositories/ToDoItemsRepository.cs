@@ -14,9 +14,17 @@ public class ToDoItemsRepository(ToDoItemsContext context) : IRepositoryAsync<To
         await context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<ToDoItem>> ReadAllAsync() => await dbSet.AsNoTracking().ToListAsync();
+    public async Task<IEnumerable<ToDoItem>> ReadAllAsync() =>
+    await dbSet
+        .AsNoTracking()
+        .Include(t => t.Category)
+        .ToListAsync();
 
-    public async Task<ToDoItem?> ReadByIdAsync(int id) => await dbSet.AsNoTracking().FirstOrDefaultAsync(item => item.ToDoItemId == id);
+    public async Task<ToDoItem?> ReadByIdAsync(int id) =>
+    await dbSet
+        .AsNoTracking()
+        .Include(t => t.Category)
+        .FirstOrDefaultAsync(item => item.ToDoItemId == id);
 
     public async Task UpdateAsync(ToDoItem item)
     {
