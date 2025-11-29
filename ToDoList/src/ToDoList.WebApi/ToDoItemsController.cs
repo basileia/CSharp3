@@ -20,7 +20,7 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync<ToDoItem> repo
 
                 var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
 
-                return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.ToDoItemId }, responseDto);
+                return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.Id }, responseDto);
             });
     }
 

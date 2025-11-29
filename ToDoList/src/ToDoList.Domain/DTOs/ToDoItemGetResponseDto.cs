@@ -1,7 +1,7 @@
 namespace ToDoList.Domain.DTOs;
 
 public record ToDoItemGetResponseDto(
-    int ToDoItemId,
+    int Id,
     string Name,
     string Description,
     bool IsCompleted,

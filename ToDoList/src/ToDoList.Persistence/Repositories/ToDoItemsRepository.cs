@@ -24,7 +24,7 @@ public class ToDoItemsRepository(ToDoItemsContext context) : IRepositoryAsync<To
     await dbSet
         .AsNoTracking()
         .Include(t => t.Category)
-        .FirstOrDefaultAsync(item => item.ToDoItemId == id);
+        .FirstOrDefaultAsync(item => item.Id == id);
 
     public async Task UpdateAsync(ToDoItem item)
     {
