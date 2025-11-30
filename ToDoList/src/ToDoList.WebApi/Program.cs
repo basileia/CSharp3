@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddDbContext<ToDoItemsContext>();
     builder.Services.AddAutoMapper(typeof(MappingProfile));
     builder.Services.AddScoped<IRepositoryAsync, ToDoItemsRepository>();
+    builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
     builder.Services.AddScoped<IMapper, Mapper>();
 }
