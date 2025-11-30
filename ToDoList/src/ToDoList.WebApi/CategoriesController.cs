@@ -16,7 +16,18 @@ public class CategoriesController(IMapper mapper, ICategoryRepository repository
     {
         return await ExecuteWithExceptionHandling(async () =>
         {
+            var normalizedName = Category.Normalize(request.Name);
+
+            var exists = await Repository.ExistsByNormalizedNameAsync(normalizedName);
+            if (exists)
+            {
+                return Problem(
+                    detail: $"Kategorie s názvem '{request.Name}' už existuje.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var category = Mapper.Map<Category>(request);
+            category.NormalizedName = normalizedName;
             await Repository.CreateAsync(category);
 
             var response = Mapper.Map<CategoryGetResponseDto>(category);
@@ -59,11 +70,29 @@ public class CategoriesController(IMapper mapper, ICategoryRepository repository
         {
             var category = await Repository.ReadByIdAsync(categoryId);
             if (category == null)
+            {
                 return Problem(
                     detail: $"Kategorie s ID {categoryId} nebyla nalezena.",
                     statusCode: StatusCodes.Status404NotFound);
+            }
+
+            var normalizedName = Category.Normalize(request.Name);
+
+            if (normalizedName == category.NormalizedName)
+            {
+                return NoContent();
+            }
+
+            var exists = await Repository.ExistsByNormalizedNameAsync(normalizedName);
+            if (exists)
+            {
+                return Problem(
+                    detail: $"Kategorie s názvem '{request.Name}' už existuje.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
 
             Mapper.Map(request, category);
+            category.NormalizedName = normalizedName;
             await Repository.UpdateAsync(category);
 
             return NoContent();
