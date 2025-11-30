@@ -10,18 +10,18 @@ namespace ToDoList.Test.UnitTests;
 public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
 {
     [Fact]
-    public async Task Read_ReturnsAllItems()
+    public async Task Read_ReturnsAllItems_WithCategory()
     {
         // Arrange
         var toDoItems = new List<ToDoItem>
             {
-                new() { ToDoItemId = 1, Name = "Nakoupit potraviny", Description = "Koupit mléko", IsCompleted = false },
-                new() { ToDoItemId = 2, Name = "Uklidit", Description = "Uklidit stůl", IsCompleted = true }
+                new() { Id = 1, Name = "Nakoupit potraviny", Description = "Koupit mléko", IsCompleted = false },
+                new() { Id = 2, Name = "Uklidit", Description = "Uklidit stůl", IsCompleted = true }
             };
 
         var expectedDtos = CreateValidGetResponseDtoList();
 
-        RepositoryMock.ReadAllAsync().Returns(Task.FromResult<IEnumerable<ToDoItem>>(toDoItems));
+        RepositoryMock.ReadAllIncludingCategoryAsync().Returns(Task.FromResult<IEnumerable<ToDoItem>>(toDoItems));
         MapperMock.Map<IEnumerable<ToDoItemGetResponseDto>>(toDoItems).Returns(expectedDtos);
 
         var controller = CreateController();
@@ -34,7 +34,7 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
         var actualDtos = Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(okResult.Value);
 
         Assert.Equal(expectedDtos.Count, ((List<ToDoItemGetResponseDto>)actualDtos).Count);
-        await RepositoryMock.Received(1).ReadAllAsync();
+        await RepositoryMock.Received(1).ReadAllIncludingCategoryAsync();
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
     {
         // Arrange
         var someItem = new ToDoItem { Name = "Some Task", Description = "Some Description", IsCompleted = false };
-        RepositoryMock.ReadAllAsync().Returns(Task.FromResult<IEnumerable<ToDoItem>>([someItem]));
+        RepositoryMock.ReadAllIncludingCategoryAsync().Returns(Task.FromResult<IEnumerable<ToDoItem>>([someItem]));
         MapperMock.Map<IEnumerable<ToDoItemGetResponseDto>>(Arg.Any<IEnumerable<ToDoItem>>())
                     .Returns(CreateValidGetResponseDtoList());
 
@@ -54,14 +54,14 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         Assert.IsAssignableFrom<IEnumerable<ToDoItemGetResponseDto>>(okResult.Value);
-        await RepositoryMock.Received(1).ReadAllAsync();
+        await RepositoryMock.Received(1).ReadAllIncludingCategoryAsync();
     }
 
     [Fact]
     public async Task Read_WhenRepositoryThrowsException_ReturnsInternalServerError()
     {
         // Arrange
-        RepositoryMock.ReadAllAsync().ThrowsAsync(new Exception("Unexpected error"));
+        RepositoryMock.ReadAllIncludingCategoryAsync().ThrowsAsync(new Exception("Unexpected error"));
 
         var controller = CreateController();
 
@@ -81,7 +81,7 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
         var toDoItem = CreateValidToDoItem();
         var expectedDto = CreateValidGetResponseDto(id: itemId);
 
-        RepositoryMock.ReadByIdAsync(itemId).Returns(Task.FromResult<ToDoItem?>(toDoItem));
+        RepositoryMock.ReadByIdIncludingCategoryAsync(itemId).Returns(Task.FromResult<ToDoItem?>(toDoItem));
         MapperMock.Map<ToDoItemGetResponseDto>(toDoItem).Returns(expectedDto);
 
         var controller = CreateController();
@@ -93,10 +93,12 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
         var okResult = Assert.IsType<OkObjectResult>(result);
         var actualDto = Assert.IsType<ToDoItemGetResponseDto>(okResult.Value);
 
-        Assert.Equal(expectedDto.ToDoItemId, actualDto.ToDoItemId);
+        Assert.Equal(expectedDto.Id, actualDto.Id);
         Assert.Equal(expectedDto.Name, actualDto.Name);
         Assert.Equal(expectedDto.Description, actualDto.Description);
         Assert.Equal(expectedDto.IsCompleted, actualDto.IsCompleted);
+        Assert.Equal(expectedDto.CategoryId, actualDto.CategoryId);
+        Assert.Equal(expectedDto.CategoryName, actualDto.CategoryName);
     }
 
     [Fact]
@@ -104,7 +106,7 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
     {
         // Arrange
         int nonExistentId = 999;
-        RepositoryMock.ReadByIdAsync(nonExistentId).Returns(Task.FromResult<ToDoItem?>(null));
+        RepositoryMock.ReadByIdIncludingCategoryAsync(nonExistentId).Returns(Task.FromResult<ToDoItem?>(null));
 
         var controller = CreateController();
 
@@ -123,7 +125,7 @@ public class ToDoItemsControllerGetTests : ToDoItemsControllerTestBase
         int id = 1;
 
         RepositoryMock
-            .ReadByIdAsync(id)
+            .ReadByIdIncludingCategoryAsync(id)
             .ThrowsAsync(new Exception("Unexpected error"));
 
         var controller = CreateController();

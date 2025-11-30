@@ -25,7 +25,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         result.Should().BeOfType<NoContentResult>();
 
         await RepositoryMock.Received(1).ReadByIdAsync(existingId);
-        await RepositoryMock.Received(1).DeleteAsync(existingId);
+        await RepositoryMock.Received(1).DeleteAsync(existingItem);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         problemDetails.Detail.Should()
             .Contain($"Úkol s ID {nonExistentId} nebyl nalezen");
 
-        await RepositoryMock.DidNotReceive().DeleteAsync(Arg.Any<int>());
+        await RepositoryMock.DidNotReceive().DeleteAsync(Arg.Any<ToDoItem>());
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
 
         RepositoryMock.ReadByIdAsync(existingId).Returns(Task.FromResult<ToDoItem?>(existingItem));
         RepositoryMock
-            .When(r => r.DeleteAsync(existingId))
+            .When(r => r.DeleteAsync(existingItem))
             .Do(_ => throw new Exception("Database error"));
 
         var controller = CreateController();
@@ -103,6 +103,6 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
 
         objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
 
-        await RepositoryMock.DidNotReceive().DeleteAsync(Arg.Any<int>());
+        await RepositoryMock.DidNotReceive().DeleteAsync(Arg.Any<ToDoItem>());
     }
 }
