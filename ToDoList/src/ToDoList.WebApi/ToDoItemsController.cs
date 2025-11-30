@@ -8,13 +8,36 @@ using ToDoList.Persistence.Repositories;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository) : BaseApiController<ToDoItem, IRepositoryAsync>(mapper, repository)
+public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository, ICategoryRepository categoryRepository) : BaseApiController<ToDoItem, IRepositoryAsync>(mapper, repository)
 {
+    private readonly ICategoryRepository CategoryRepository = categoryRepository;
+    private async Task<ActionResult<Category?>> ValidateCategory(int categoryId)
+    {
+        var category = await CategoryRepository.ReadByIdAsync(categoryId);
+        if (category == null)
+        {
+            return Problem(
+                detail: $"Kategorie s ID {categoryId} neexistuje.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        return category;
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(ToDoItemCreateRequestDto request)
     {
         return await ExecuteWithExceptionHandling(async () =>
             {
+                if (request.CategoryId is not null)
+                {
+                    var categoryResult = await ValidateCategory(request.CategoryId.Value);
+                    if (categoryResult.Result != null)
+                        return categoryResult.Result;
+
+                    var category = categoryResult.Value;
+                }
+
                 var item = Mapper.Map<ToDoItem>(request);
                 await Repository.CreateAsync(item);
 
@@ -67,6 +90,14 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository) : 
                         detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
                         statusCode: StatusCodes.Status404NotFound
                     );
+                }
+                if (request.CategoryId is not null)
+                {
+                    var categoryResult = await ValidateCategory(request.CategoryId.Value);
+                    if (categoryResult.Result != null)
+                        return categoryResult.Result;
+
+                    var category = categoryResult.Value;
                 }
 
                 Mapper.Map(request, existingItem);
