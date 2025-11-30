@@ -8,7 +8,7 @@ using ToDoList.Persistence.Repositories;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository) : BaseApiController<ToDoItem>(mapper, repository)
+public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository) : BaseApiController<ToDoItem, IRepositoryAsync>(mapper, repository)
 {
     [HttpPost]
     public async Task<IActionResult> Create(ToDoItemCreateRequestDto request)
@@ -19,7 +19,6 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository) : 
                 await Repository.CreateAsync(item);
 
                 var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
-
                 return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.Id }, responseDto);
             });
     }

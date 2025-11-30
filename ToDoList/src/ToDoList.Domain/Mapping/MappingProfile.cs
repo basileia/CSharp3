@@ -11,5 +11,9 @@ public class MappingProfile : Profile
         CreateMap<ToDoItemCreateRequestDto, ToDoItem>().ReverseMap();
         CreateMap<ToDoItemUpdateRequestDto, ToDoItem>().ReverseMap();
         CreateMap<ToDoItemGetResponseDto, ToDoItem>().ReverseMap();
+
+        CreateMap<CategoryCreateRequestDto, Category>();
+        CreateMap<CategoryUpdateRequestDto, Category>();
+        CreateMap<Category, CategoryGetResponseDto>();
     }
 }

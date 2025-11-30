@@ -5,12 +5,14 @@ using AutoMapper;
 using ToDoList.Persistence.Repositories;
 
 [ApiController]
-public class BaseApiController<T> : ControllerBase where T : class
+public class BaseApiController<TEntity, TRepository> : ControllerBase
+    where TEntity : class
+    where TRepository : IBaseRepository<TEntity>
 {
     protected IMapper Mapper { get; }
-    protected IRepositoryAsync Repository { get; }
+    protected TRepository Repository { get; }
 
-    protected BaseApiController(IMapper mapper, IRepositoryAsync repository)
+    protected BaseApiController(IMapper mapper, TRepository repository)
     {
         Mapper = mapper;
         Repository = repository;
