@@ -18,15 +18,6 @@ public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
         // Act
         var result = await controller.Read();
 
-        if (result is ObjectResult obj)
-        {
-            Console.WriteLine($"Status code: {obj.StatusCode}, value: {obj.Value}");
-        }
-        else
-        {
-            Console.WriteLine($"Result type: {result.GetType().Name}");
-        }
-
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var actualDtos = Assert.IsType<List<ToDoItemGetResponseDto>>(okResult.Value);
@@ -36,8 +27,8 @@ public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
         Assert.Contains(actualDtos, dto => dto.Name == "Task 2");
 
         // Cleanup
-        await RemoveItemFromDbAsync(item1.ToDoItemId);
-        await RemoveItemFromDbAsync(item2.ToDoItemId);
+        await RemoveItemFromDbAsync(item1.Id);
+        await RemoveItemFromDbAsync(item2.Id);
     }
 
     [Fact]
@@ -49,19 +40,19 @@ public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
         var controller = CreateController();
 
         // Act
-        var result = await controller.ReadById(newItem.ToDoItemId);
+        var result = await controller.ReadById(newItem.Id);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var dto = Assert.IsType<ToDoItemGetResponseDto>(okResult.Value);
 
-        Assert.Equal(newItem.ToDoItemId, dto.ToDoItemId);
+        Assert.Equal(newItem.Id, dto.Id);
         Assert.Equal(newItem.Name, dto.Name);
         Assert.Equal(newItem.Description, dto.Description);
         Assert.Equal(newItem.IsCompleted, dto.IsCompleted);
 
         // Cleanup
-        await RemoveItemFromDbAsync(newItem.ToDoItemId);
+        await RemoveItemFromDbAsync(newItem.Id);
     }
 
     [Fact]
@@ -89,18 +80,18 @@ public class ToDoItemControllerGetTests : ToDoItemsControllerTestBase
         var controller = CreateController();
 
         // Act
-        var result = await controller.ReadById(newItem.ToDoItemId);
+        var result = await controller.ReadById(newItem.Id);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var dto = Assert.IsType<ToDoItemGetResponseDto>(okResult.Value);
 
-        Assert.Equal(newItem.ToDoItemId, dto.ToDoItemId);
+        Assert.Equal(newItem.Id, dto.Id);
         Assert.Equal(name, dto.Name);
         Assert.Equal(description, dto.Description);
         Assert.Equal(newItem.IsCompleted, dto.IsCompleted);
 
         // Cleanup
-        await RemoveItemFromDbAsync(newItem.ToDoItemId);
+        await RemoveItemFromDbAsync(newItem.Id);
     }
 }

@@ -111,7 +111,7 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository, IC
     {
         return await ExecuteWithExceptionHandling(async () =>
             {
-                var toDoItem = await Repository.ReadByIdAsync(toDoItemId);
+                var toDoItem = await Repository.ReadByIdIncludingCategoryAsync(toDoItemId);
 
                 if (toDoItem == null)
                 {

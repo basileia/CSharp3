@@ -22,9 +22,6 @@ public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where T
     public virtual async Task<IEnumerable<TEntity>> ReadAllAsync() =>
         await dbSet.AsNoTracking().ToListAsync();
 
-    public virtual async Task<TEntity?> ReadByIdAsync(int id) =>
-        await dbSet.FindAsync(id);
-
     public virtual async Task UpdateAsync(TEntity entity)
     {
         context.Update(entity);

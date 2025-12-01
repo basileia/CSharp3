@@ -14,7 +14,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         // Arrange
         int existingId = 1;
         var existingItem = CreateValidToDoItem(id: existingId);
-        RepositoryMock.ReadByIdAsync(existingId).Returns(Task.FromResult<ToDoItem?>(existingItem));
+        RepositoryMock.ReadByIdIncludingCategoryAsync(existingId).Returns(Task.FromResult<ToDoItem?>(existingItem));
 
         var controller = CreateController();
 
@@ -24,7 +24,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         // Assert
         result.Should().BeOfType<NoContentResult>();
 
-        await RepositoryMock.Received(1).ReadByIdAsync(existingId);
+        await RepositoryMock.Received(1).ReadByIdIncludingCategoryAsync(existingId);
         await RepositoryMock.Received(1).DeleteAsync(existingItem);
     }
 
@@ -33,7 +33,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
     {
         // Arrange
         int nonExistentId = 999;
-        RepositoryMock.ReadByIdAsync(nonExistentId).Returns(Task.FromResult<ToDoItem?>(null));
+        RepositoryMock.ReadByIdIncludingCategoryAsync(nonExistentId).Returns(Task.FromResult<ToDoItem?>(null));
 
         var controller = CreateController();
 
@@ -64,7 +64,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         int existingId = 1;
         var existingItem = CreateValidToDoItem(id: existingId);
 
-        RepositoryMock.ReadByIdAsync(existingId).Returns(Task.FromResult<ToDoItem?>(existingItem));
+        RepositoryMock.ReadByIdIncludingCategoryAsync(existingId).Returns(Task.FromResult<ToDoItem?>(existingItem));
         RepositoryMock
             .When(r => r.DeleteAsync(existingItem))
             .Do(_ => throw new Exception("Database error"));
@@ -88,7 +88,7 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         int anyId = 1;
 
         RepositoryMock
-            .When(r => r.ReadByIdAsync(anyId))
+            .When(r => r.ReadByIdIncludingCategoryAsync(anyId))
             .Do(_ => throw new Exception("Database error"));
 
         var controller = CreateController();
