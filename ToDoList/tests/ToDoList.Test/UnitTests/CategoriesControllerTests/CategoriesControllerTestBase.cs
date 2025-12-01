@@ -25,8 +25,7 @@ public abstract class CategoriesControllerTestBase
         string name = "Práce")
         => new()
         {
-            Name = name,
-            NormalizedName = Category.Normalize(name)
+            Name = name
         };
 
     protected static CategoryCreateRequestDto CreateCreateDto(string name = "Práce")

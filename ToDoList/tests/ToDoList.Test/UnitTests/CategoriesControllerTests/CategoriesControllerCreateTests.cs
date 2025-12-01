@@ -18,10 +18,7 @@ public class CategoriesControllerCreateTests : CategoriesControllerTestBase
         RepositoryMock.ExistsByNormalizedNameAsync(normalizedName)
             .Returns(false);
 
-        var mappedCategory = new Category
-        {
-            Name = request.Name
-        };
+        var mappedCategory = CreateCategory(request.Name);
         Mapper.Map<Category>(request).Returns(mappedCategory);
 
         var expectedResponse = new CategoryGetResponseDto(1, request.Name);
