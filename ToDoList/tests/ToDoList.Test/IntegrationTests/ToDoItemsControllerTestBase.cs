@@ -16,12 +16,12 @@ public abstract class ToDoItemsControllerTestBase : IAsyncDisposable
     protected ToDoItemsController Controller { get; }
     protected ICategoryRepository CategoryRepository { get; }
     protected ToDoItemsContext DbContext { get; }
-    private readonly string dbPath = "../../../IntegrationTests/data/localdb_test.db";
+    private readonly string dbPath;
 
     protected ToDoItemsControllerTestBase()
     {
         string className = GetType().Name;
-        dbPath = $"../../../IntegrationTests/data/localdb_test_{className}_{Guid.NewGuid()}.db";
+        dbPath = $"../../../IntegrationTests/data/localdb_test_{className}.db";
 
         string? folder = Path.GetDirectoryName(dbPath);
         if (!Directory.Exists(folder))
@@ -130,10 +130,12 @@ public abstract class ToDoItemsControllerTestBase : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await DbContext.DisposeAsync();
+
         if (File.Exists(dbPath))
         {
             File.Delete(dbPath);
         }
+
         GC.SuppressFinalize(this);
     }
 }
