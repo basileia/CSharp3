@@ -11,7 +11,7 @@ using NSubstitute;
 public abstract class ToDoItemsControllerTestBase
 {
     protected IMapper MapperMock;
-    protected IRepository<ToDoItem> RepositoryMock;
+    protected IRepositoryAsync<ToDoItem> RepositoryMock;
 
     protected ToDoItemsController CreateController()
         => new(MapperMock, RepositoryMock);
@@ -19,7 +19,7 @@ public abstract class ToDoItemsControllerTestBase
     protected ToDoItemsControllerTestBase()
     {
         MapperMock = Substitute.For<IMapper>();
-        RepositoryMock = Substitute.For<IRepository<ToDoItem>>();
+        RepositoryMock = Substitute.For<IRepositoryAsync<ToDoItem>>();
     }
 
     protected static ToDoItemCreateRequestDto CreateValidCreateDto(

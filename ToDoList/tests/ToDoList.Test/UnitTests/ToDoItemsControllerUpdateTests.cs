@@ -10,18 +10,17 @@ namespace ToDoList.Test.UnitTests;
 public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
 {
     [Fact]
-    public void UpdateById_WhenItemDoesNotExist_ReturnsNotFound()
+    public async Task UpdateById_WhenItemDoesNotExist_ReturnsNotFound()
     {
         // Arrange
         int nonExistentId = 999;
         var updateDto = CreateValidUpdateDto();
 
-        RepositoryMock.ReadById(nonExistentId).Returns((ToDoItem?)null);
-
+        RepositoryMock.ReadByIdAsync(nonExistentId).Returns(Task.FromResult<ToDoItem?>(null));
         var controller = CreateController();
 
         // Act
-        var result = controller.UpdateById(nonExistentId, updateDto);
+        var result = await controller.UpdateById(nonExistentId, updateDto);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -31,32 +30,32 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
         Assert.Contains($"Úkol s ID {nonExistentId} nebyl nalezen", problemDetails.Detail);
 
         MapperMock.DidNotReceive().Map(Arg.Any<ToDoItemUpdateRequestDto>(), Arg.Any<ToDoItem>());
-        RepositoryMock.DidNotReceive().Update(Arg.Any<ToDoItem>());
+        await RepositoryMock.DidNotReceive().UpdateAsync(Arg.Any<ToDoItem>());
     }
 
     [Fact]
-    public void UpdateById_WithValidDto_ReturnsNoContent()
+    public async Task UpdateById_WithValidDto_ReturnsNoContent()
     {
         // Arrange
         var existingItem = CreateValidToDoItem();
         var updateDto = CreateValidUpdateDto();
 
-        RepositoryMock.ReadById(existingItem.ToDoItemId).Returns(existingItem);
+        RepositoryMock.ReadByIdAsync(existingItem.ToDoItemId).Returns(Task.FromResult<ToDoItem?>(existingItem));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.UpdateById(existingItem.ToDoItemId, updateDto);
+        var result = await controller.UpdateById(existingItem.ToDoItemId, updateDto);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
 
         MapperMock.Received(1).Map(updateDto, existingItem);
-        RepositoryMock.Received(1).Update(existingItem);
+        await RepositoryMock.Received(1).UpdateAsync(existingItem);
     }
 
     [Fact]
-    public void UpdateById_UpdatesItemValuesCorrectly()
+    public async Task UpdateById_UpdatesItemValuesCorrectly()
     {
         // Arrange
         var existingItem = CreateValidToDoItem();
@@ -66,7 +65,7 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
             isCompleted: true
         );
 
-        RepositoryMock.ReadById(existingItem.ToDoItemId).Returns(existingItem);
+        RepositoryMock.ReadByIdAsync(existingItem.ToDoItemId).Returns(Task.FromResult<ToDoItem?>(existingItem));
 
         MapperMock.When(m => m.Map(updateDto, existingItem))
                   .Do(_ =>
@@ -79,7 +78,7 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
         var controller = CreateController();
 
         // Act
-        var result = controller.UpdateById(existingItem.ToDoItemId, updateDto);
+        var result = await controller.UpdateById(existingItem.ToDoItemId, updateDto);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
@@ -87,25 +86,25 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
         Assert.Equal(updateDto.Description, existingItem.Description);
         Assert.Equal(updateDto.IsCompleted, existingItem.IsCompleted);
 
-        RepositoryMock.Received(1).Update(existingItem);
+        await RepositoryMock.Received(1).UpdateAsync(existingItem);
     }
 
     [Fact]
-    public void UpdateById_WhenRepositoryThrowsException_ReturnsInternalServerError()
+    public async Task UpdateById_WhenRepositoryThrowsException_ReturnsInternalServerError()
     {
         // Arrange
         var existingItem = CreateValidToDoItem();
         var updateDto = CreateValidUpdateDto();
 
-        RepositoryMock.ReadById(existingItem.ToDoItemId).Returns(existingItem);
+        RepositoryMock.ReadByIdAsync(existingItem.ToDoItemId).Returns(Task.FromResult<ToDoItem?>(existingItem));
         RepositoryMock
-            .When(r => r.Update(existingItem))
+            .When(r => r.UpdateAsync(existingItem))
             .Do(r => throw new Exception("Database error"));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.UpdateById(existingItem.ToDoItemId, updateDto);
+        var result = await controller.UpdateById(existingItem.ToDoItemId, updateDto);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -113,23 +112,23 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
     }
 
     [Fact]
-    public void UpdateById_WhenReadByIdThrowsException_ReturnsInternalServerError()
+    public async Task UpdateById_WhenReadByIdThrowsException_ReturnsInternalServerError()
     {
         // Arrange
         int itemId = 1;
         var updateDto = CreateValidUpdateDto();
 
-        RepositoryMock.ReadById(itemId).Throws(new Exception("Database connection failed"));
+        RepositoryMock.ReadByIdAsync(itemId).ThrowsAsync(new Exception("Database connection failed"));
 
         var controller = CreateController();
 
         // Act
-        var result = controller.UpdateById(itemId, updateDto);
+        var result = await controller.UpdateById(itemId, updateDto);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
         Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
 
-        RepositoryMock.DidNotReceive().Update(Arg.Any<ToDoItem>());
+        await RepositoryMock.DidNotReceive().UpdateAsync(Arg.Any<ToDoItem>());
     }
 }

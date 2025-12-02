@@ -7,14 +7,15 @@ using ToDoList.Domain.DTOs;
 public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
 {
     [Fact]
-    public void UpdateById_WhenItemDoesNotExist_ReturnsNotFound()
+    public async Task UpdateById_WhenItemDoesNotExist_ReturnsNotFound()
     {
         // Arrange
         int nonExistentId = -1;
         var updateDto = CreateValidUpdateDto();
+        var controller = CreateController();
 
         // Act
-        var result = Controller.UpdateById(nonExistentId, updateDto);
+        var result = await controller.UpdateById(nonExistentId, updateDto);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -22,10 +23,10 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
     }
 
     [Fact]
-    public void UpdateById_WithValidDto_ReturnsNoContentAndUpdatesItem()
+    public async Task UpdateById_WithValidDto_ReturnsNoContentAndUpdatesItem()
     {
         // Arrange
-        var existingItem = AddItemToDb(CreateValidToDoItem(
+        var existingItem = await AddItemToDbAsync(CreateValidToDoItem(
             name: "Původní úkol",
             description: "Původní popis",
             isCompleted: false));
@@ -35,34 +36,38 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
             description: "Nový popis",
             isCompleted: true);
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.UpdateById(existingItem.ToDoItemId, updateDto);
+        var result = await controller.UpdateById(existingItem.ToDoItemId, updateDto);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
 
-        var updatedItem = GetItemFromDb(existingItem.ToDoItemId);
+        var updatedItem = await GetItemFromDbAsync(existingItem.ToDoItemId);
         Assert.NotNull(updatedItem);
         Assert.Equal(updateDto.Name, updatedItem.Name);
         Assert.Equal(updateDto.Description, updatedItem.Description);
         Assert.Equal(updateDto.IsCompleted, updatedItem.IsCompleted);
 
         // Cleanup
-        RemoveItemFromDb(existingItem.ToDoItemId);
+        await RemoveItemFromDbAsync(existingItem.ToDoItemId);
     }
 
     [Fact]
-    public void UpdateById_WithInvalidDto_ReturnsObjectResult500()
+    public async Task UpdateById_WithInvalidDto_ReturnsObjectResult500()
     {
         // Arrange
-        var existingItem = AddItemToDb(CreateValidToDoItem());
+        var existingItem = await AddItemToDbAsync(CreateValidToDoItem());
         var invalidDto = new ToDoItemUpdateRequestDto(
             Name: null!,
             Description: "Popis",
             IsCompleted: true);
 
+        var controller = CreateController();
+
         // Act
-        var result = Controller.UpdateById(existingItem.ToDoItemId, invalidDto);
+        var result = await controller.UpdateById(existingItem.ToDoItemId, invalidDto);
 
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
@@ -70,6 +75,6 @@ public class ToDoItemsControllerUpdateTests : ToDoItemsControllerTestBase
         Assert.NotNull(objectResult.Value);
 
         // Cleanup
-        RemoveItemFromDb(existingItem.ToDoItemId);
+        await RemoveItemFromDbAsync(existingItem.ToDoItemId);
     }
 }
