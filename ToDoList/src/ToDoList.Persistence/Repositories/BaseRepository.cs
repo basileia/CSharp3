@@ -2,29 +2,30 @@ namespace ToDoList.Persistence.Repositories;
 
 using Microsoft.EntityFrameworkCore;
 
-public abstract class BaseRepository<TEntity>(ToDoItemsContext context) : IBaseRepository<TEntity> where TEntity : class
+public abstract class BaseRepository<TEntity>(ToDoItemsContext context) : IBaseRepository<TEntity>
+    where TEntity : class
 {
-    private readonly ToDoItemsContext context = context;
-    private readonly DbSet<TEntity> dbSet = context.Set<TEntity>();
+    protected ToDoItemsContext Context { get; } = context;
+    protected DbSet<TEntity> DbSet { get; } = context.Set<TEntity>();
 
     public virtual async Task CreateAsync(TEntity entity)
     {
-        await dbSet.AddAsync(entity);
-        await context.SaveChangesAsync();
+        await DbSet.AddAsync(entity);
+        await Context.SaveChangesAsync();
     }
 
     public virtual async Task<IEnumerable<TEntity>> ReadAllAsync() =>
-        await dbSet.AsNoTracking().ToListAsync();
+        await DbSet.AsNoTracking().ToListAsync();
 
     public virtual async Task UpdateAsync(TEntity entity)
     {
-        context.Update(entity);
-        await context.SaveChangesAsync();
+        Context.Update(entity);
+        await Context.SaveChangesAsync();
     }
 
     public virtual async Task DeleteAsync(TEntity entity)
     {
-        dbSet.Remove(entity);
-        await context.SaveChangesAsync();
+        DbSet.Remove(entity);
+        await Context.SaveChangesAsync();
     }
 }
