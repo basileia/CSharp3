@@ -1,70 +1,80 @@
 @using Microsoft.VisualBasic
 @using ToDoList.Frontend.Clients
 @using ToDoList.Frontend.Models
-
+@rendermode InteractiveServer
 @inject IToDoItemsClient toDoItemsClient
+@inject NavigationManager NavigationManager
 
 <h2>ToDo Items Dashboard</h2>
 
-<table class="table">
-    <tr>
-        <th @onclick="OrderById" style="cursor:pointer">
-            ID @((sortByIdAsc ? "▲" : "▼"))
-        </th>
-        <th @onclick="OrderByName" style="cursor:pointer">
-            Název @((sortByNameAsc ? "▲" : "▼"))
-        </th>
-        <th>Popis</th>
-        <th>Dokončeno</th>
-    </tr>
-    <tbody>
-        @foreach (var item in SortedData)
-        {
+
+<div class="container">
+    <table class="table table-hover mt-3">
+        <thead class="table-dark">
             <tr>
-                <td>@item.Id</td>
-                <td>@item.Name</td>
-                <td>@item.Description</td>
-                <td>@(item.IsCompleted ? "Ano" : "Ne")</td>
+                <th>
+                    <button class="btn btn-primary" @onclick="OrderById" style="cursor:pointer">
+                        ID @((sortByIdAsc ? "▲" : "▼"))
+                    </button>
+                </th>
+                <th>
+                    <button class="btn btn-secondary" @onclick="OrderByName" style="cursor:pointer">
+                        Název @((sortByNameAsc ? "▲" : "▼"))
+                    </button>
+                </th>
+                <th>Popis</th>
+                <th>Dokončeno</th>
+                <th>Akce</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in SortedData)
+            {
+                <tr class="@(item.IsCompleted ? "table-success" : "")">
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>@(item.IsCompleted ? "Ano" : "Ne")</td>
+                    <td><button class="btn btn-success" @onclick="() => EditItem(item)">Upravit</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div>
+        Počet úkolů: @SortedData.Count
+    </div>
+</div>
 
 @code {
-    private List<ToDoItemView> testData = new()
-{
-new ToDoItemView(1, "Nákup", "Koupit mléko a chléb", false),
-new ToDoItemView(2, "Úklid", "Vysát a vytřít obývák", true),
-new ToDoItemView(3, "Programování", "Dokončit Hangman projekt", false),
-new ToDoItemView(4, "Cvičení", "Krátký workout 20 minut", false),
-new ToDoItemView(5, "Telefonát", "Zavolat babičce", true)
-};
-
     private List<ToDoItemView> SortedData = new List<ToDoItemView>();
     private bool sortByIdAsc = true;
     private bool sortByNameAsc = true;
 
     protected override async Task OnInitializedAsync()
     {
-        //OrderByName();
         SortedData = await toDoItemsClient.ReadItemsAsync();
     }
 
     private void OrderByName()
     {
         SortedData = sortByNameAsc
-        ? testData.OrderBy(item => item.Name).ToList()
-        : testData.OrderByDescending(item => item.Name).ToList();
+        ? SortedData.OrderBy(item => item.Name).ToList()
+        : SortedData.OrderByDescending(item => item.Name).ToList();
 
         sortByNameAsc = !sortByNameAsc;
         sortByIdAsc = true;
     }
 
+    private void EditItem(ToDoItemView toDoItem)
+    {
+        NavigationManager.NavigateTo($"/editToDoItem/{toDoItem.Id}");
+    }
+
     private void OrderById()
     {
         SortedData = sortByIdAsc
-        ? testData.OrderBy(item => item.Id).ToList()
-        : testData.OrderByDescending(item => item.Id).ToList();
+        ? SortedData.OrderBy(item => item.Id).ToList()
+        : SortedData.OrderByDescending(item => item.Id).ToList();
 
         sortByIdAsc = !sortByIdAsc;
         sortByNameAsc = true;
