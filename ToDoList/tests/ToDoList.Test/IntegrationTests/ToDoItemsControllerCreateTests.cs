@@ -22,11 +22,7 @@ public class ToDoItemsControllerCreateTests : ToDoItemsControllerTestBase
         Assert.Equal(nameof(controller.ReadById), createdAtActionResult.ActionName);
 
         // Cleanup
-        var createdItem = await Repository.ReadByIdAsync(createdDto.ToDoItemId);
-        if (createdItem != null)
-        {
-            await RemoveItemFromDbAsync(createdItem.ToDoItemId);
-        }
+        await RemoveItemFromDbAsync(createdDto.Id);
     }
 
     [Fact]
@@ -46,17 +42,17 @@ public class ToDoItemsControllerCreateTests : ToDoItemsControllerTestBase
         Assert.Equal(createDto.Name, actualDto.Name);
         Assert.Equal(createDto.Description, actualDto.Description);
         Assert.Equal(createDto.IsCompleted, actualDto.IsCompleted);
-        Assert.True(actualDto.ToDoItemId > 0);
+        Assert.True(actualDto.Id > 0);
 
         // Cleanup
-        await RemoveItemFromDbAsync(actualDto.ToDoItemId);
+        await RemoveItemFromDbAsync(actualDto.Id);
     }
 
     [Fact]
     public async Task Create_WithNullName_ReturnsObjectResult500()
     {
         // Arrange
-        var createDto = new ToDoItemCreateRequestDto(Name: null!, Description: "", IsCompleted: false);
+        var createDto = new ToDoItemCreateRequestDto(Name: null!, Description: "", IsCompleted: false, CategoryId: null);
         var controller = CreateController();
 
         // Act
@@ -66,5 +62,63 @@ public class ToDoItemsControllerCreateTests : ToDoItemsControllerTestBase
         var objectResult = Assert.IsType<ObjectResult>(result);
         Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
         Assert.NotNull(objectResult.Value);
+    }
+
+    [Fact]
+    public async Task Create_WithExistingCategory_ReturnsCreatedItem()
+    {
+        // Arrange
+        var category = CreateValidCategory(name: "Práce");
+        await AddCategoryToDbAsync(category);
+
+        var createDto = CreateValidCreateDto(
+            name: "Úkol s kategorií",
+            description: "Test popis",
+            isCompleted: false,
+            categoryId: category.Id
+        );
+
+        var controller = CreateController();
+
+        // Act
+        var result = await controller.Create(createDto);
+
+        // Assert
+        var createdResult = Assert.IsType<CreatedAtActionResult>(result);
+        var dto = Assert.IsType<ToDoItemGetResponseDto>(createdResult.Value);
+
+        Assert.Equal(createDto.Name, dto.Name);
+        Assert.Equal(createDto.Description, dto.Description);
+        Assert.Equal(createDto.IsCompleted, dto.IsCompleted);
+        Assert.Equal(category.Id, dto.CategoryId);
+
+        // Cleanup
+        await RemoveItemFromDbAsync(dto.Id);
+        await RemoveCategoryFromDbAsync(category.Id);
+    }
+
+    [Fact]
+    public async Task Create_WithNonExistingCategory_ReturnsBadRequest()
+    {
+        // Arrange
+        int nonExistentCategoryId = -1;
+        var createDto = CreateValidCreateDto(
+            name: "Úkol s neexistující kategorií",
+            description: "Test popis",
+            isCompleted: false,
+            categoryId: nonExistentCategoryId
+        );
+
+        var controller = CreateController();
+
+        // Act
+        var result = await controller.Create(createDto);
+
+        // Assert
+        var objectResult = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(StatusCodes.Status400BadRequest, objectResult.StatusCode);
+
+        var problemDetails = Assert.IsType<ProblemDetails>(objectResult.Value);
+        Assert.Contains($"Kategorie s ID {nonExistentCategoryId} neexistuje", problemDetails.Detail);
     }
 }

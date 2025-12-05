@@ -12,8 +12,9 @@ using Microsoft.EntityFrameworkCore;
 public abstract class ToDoItemsControllerTestBase : IDisposable
 {
     protected IMapper Mapper { get; }
-    protected IRepositoryAsync<ToDoItem> Repository { get; }
+    protected IRepositoryAsync Repository { get; }
     protected ToDoItemsController Controller { get; }
+    protected ICategoryRepository CategoryRepository { get; }
     protected ToDoItemsContext DbContext { get; }
     private readonly string dbPath;
 
@@ -32,6 +33,7 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
         DbContext.Database.EnsureCreated();
 
         Repository = new ToDoItemsRepository(DbContext);
+        CategoryRepository = new CategoryRepository(DbContext);
 
         var config = new MapperConfiguration(cfg =>
         {
@@ -39,13 +41,16 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
         });
         Mapper = config.CreateMapper();
 
-        Controller = new ToDoItemsController(Mapper, Repository);
+        Controller = new ToDoItemsController(Mapper, Repository, CategoryRepository);
     }
 
     protected ToDoItemsController CreateController()
     {
+        DbContext.ChangeTracker.Clear();
+
         var repository = new ToDoItemsRepository(DbContext);
-        return new ToDoItemsController(Mapper, repository);
+        var categoryRepository = new CategoryRepository(DbContext);
+        return new ToDoItemsController(Mapper, repository, categoryRepository);
     }
     protected async Task<ToDoItem> AddItemToDbAsync(ToDoItem item)
     {
@@ -55,31 +60,58 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
     }
 
     protected async Task<ToDoItem?> GetItemFromDbAsync(int id) =>
-        await Repository.ReadByIdAsync(id);
+        await Repository.ReadByIdIncludingCategoryAsync(id);
 
     protected async Task RemoveItemFromDbAsync(int id)
     {
-        var item = await Repository.ReadByIdAsync(id);
+        DbContext.ChangeTracker.Clear();
+
+        var item = await Repository.ReadByIdIncludingCategoryAsync(id);
         if (item != null)
         {
-            await Repository.DeleteAsync(item.ToDoItemId);
+            await Repository.DeleteAsync(item);
+        }
+    }
+
+    protected static Category CreateValidCategory(string name = "Default Category")
+        => new()
+        {
+            Name = name
+        };
+
+    protected async Task<Category> AddCategoryToDbAsync(Category category)
+    {
+        await CategoryRepository.CreateAsync(category);
+        DbContext.Entry(category).State = EntityState.Detached;
+        return category;
+    }
+    protected async Task RemoveCategoryFromDbAsync(int id)
+    {
+        DbContext.ChangeTracker.Clear();
+
+        var entity = await CategoryRepository.ReadByIdAsync(id);
+        if (entity != null)
+        {
+            await CategoryRepository.DeleteAsync(entity);
         }
     }
 
     protected static ToDoItemCreateRequestDto CreateValidCreateDto(
         string name = "Test Task",
         string description = "Test Description",
-        bool isCompleted = false)
+        bool isCompleted = false,
+        int? categoryId = null)
     {
-        return new ToDoItemCreateRequestDto(name, description, isCompleted);
+        return new ToDoItemCreateRequestDto(name, description, isCompleted, categoryId);
     }
 
     protected static ToDoItemUpdateRequestDto CreateValidUpdateDto(
         string name = "Updated Task",
         string description = "Updated Description",
-        bool isCompleted = true)
+        bool isCompleted = true,
+        int? categoryId = null)
     {
-        return new ToDoItemUpdateRequestDto(name, description, isCompleted);
+        return new ToDoItemUpdateRequestDto(name, description, isCompleted, categoryId);
     }
 
     protected static ToDoItem CreateValidToDoItem(
@@ -97,10 +129,10 @@ public abstract class ToDoItemsControllerTestBase : IDisposable
 
     public void Dispose()
     {
-        var items = Repository.ReadAllAsync().GetAwaiter().GetResult();
-        foreach (var item in items)
+        DbContext.Dispose();
+        if (File.Exists(dbPath))
         {
-            Repository.DeleteAsync(item.ToDoItemId).GetAwaiter().GetResult();
+            File.Delete(dbPath);
         }
 
         GC.SuppressFinalize(this);

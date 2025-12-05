@@ -11,49 +11,55 @@ using NSubstitute;
 public abstract class ToDoItemsControllerTestBase
 {
     protected IMapper MapperMock;
-    protected IRepositoryAsync<ToDoItem> RepositoryMock;
-
-    protected ToDoItemsController CreateController()
-        => new(MapperMock, RepositoryMock);
+    protected IRepositoryAsync RepositoryMock;
+    protected ICategoryRepository CategoryRepositoryMock;
 
     protected ToDoItemsControllerTestBase()
     {
         MapperMock = Substitute.For<IMapper>();
-        RepositoryMock = Substitute.For<IRepositoryAsync<ToDoItem>>();
+        RepositoryMock = Substitute.For<IRepositoryAsync>();
+        CategoryRepositoryMock = Substitute.For<ICategoryRepository>();
     }
+
+    protected ToDoItemsController CreateController()
+        => new(MapperMock, RepositoryMock, CategoryRepositoryMock);
 
     protected static ToDoItemCreateRequestDto CreateValidCreateDto(
         string name = "Test Task",
         string description = "Test Description",
-        bool isCompleted = false)
+        bool isCompleted = false,
+        int? categoryId = null)
     {
-        return new ToDoItemCreateRequestDto(name, description, isCompleted);
+        return new ToDoItemCreateRequestDto(name, description, isCompleted, categoryId);
     }
 
     protected static ToDoItemUpdateRequestDto CreateValidUpdateDto(
         string name = "Updated Task",
         string description = "Updated Description",
-        bool isCompleted = true)
+        bool isCompleted = true,
+        int? categoryId = null)
     {
-        return new ToDoItemUpdateRequestDto(name, description, isCompleted);
+        return new ToDoItemUpdateRequestDto(name, description, isCompleted, categoryId);
     }
 
     protected static ToDoItemGetResponseDto CreateValidGetResponseDto(
         int id = 1,
         string name = "Test Item",
         string description = "Test Description",
-        bool isCompleted = false)
+        bool isCompleted = false,
+        int? categoryId = null,
+        string? categoryName = null)
     {
-        return new ToDoItemGetResponseDto(id, name, description, isCompleted);
+        return new ToDoItemGetResponseDto(id, name, description, isCompleted, categoryId, categoryName);
     }
 
     protected static List<ToDoItemGetResponseDto> CreateValidGetResponseDtoList()
     {
         return new List<ToDoItemGetResponseDto>
         {
-            new ToDoItemGetResponseDto(1, "Nakoupit potraviny", "Koupit mléko, vejce a chléb", false),
-            new ToDoItemGetResponseDto(2, "Uklidit kuchyň", "Uklidit nádobí a utřít stůl", true),
-            new ToDoItemGetResponseDto(3, "Zavolat doktorovi", "Objednat se na kontrolu", false)
+            new ToDoItemGetResponseDto(1, "Nakoupit potraviny", "Koupit mléko, vejce a chléb", false, null, null),
+            new ToDoItemGetResponseDto(2, "Uklidit kuchyň", "Uklidit nádobí a utřít stůl", true, null, null),
+            new ToDoItemGetResponseDto(3, "Zavolat doktorovi", "Objednat se na kontrolu", false, null, null)
         };
     }
 
@@ -61,14 +67,16 @@ public abstract class ToDoItemsControllerTestBase
         int id = 1,
         string name = "Test Item",
         string description = "Test Description",
-        bool isCompleted = false)
+        bool isCompleted = false,
+        int? categoryId = null)
     {
         return new ToDoItem
         {
-            ToDoItemId = id,
+            Id = id,
             Name = name,
             Description = description,
-            IsCompleted = isCompleted
+            IsCompleted = isCompleted,
+            CategoryId = categoryId
         };
     }
 }

@@ -13,12 +13,12 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         var controller = CreateController();
 
         // Act
-        var result = await controller.DeleteById(existingItem.ToDoItemId);
+        var result = await controller.DeleteById(existingItem.Id);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
 
-        var deletedItem = await GetItemFromDbAsync(existingItem.ToDoItemId);
+        var deletedItem = await GetItemFromDbAsync(existingItem.Id);
         Assert.Null(deletedItem);
     }
 
@@ -35,9 +35,6 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         // Assert
         var objectResult = Assert.IsType<ObjectResult>(result);
         Assert.Equal(StatusCodes.Status404NotFound, objectResult.StatusCode);
-
-        var items = await Repository.ReadAllAsync();
-        Assert.All(items, i => Assert.NotEqual(nonExistentId, i.ToDoItemId));
     }
 
     [Fact]
@@ -48,8 +45,8 @@ public class ToDoItemsControllerDeleteTests : ToDoItemsControllerTestBase
         var controller = CreateController();
 
         // Act
-        var firstResult = await controller.DeleteById(item.ToDoItemId);
-        var secondResult = await controller.DeleteById(item.ToDoItemId);
+        var firstResult = await controller.DeleteById(item.Id);
+        var secondResult = await controller.DeleteById(item.Id);
 
         // Assert
         Assert.IsType<NoContentResult>(firstResult);

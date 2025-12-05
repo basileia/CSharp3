@@ -9,10 +9,10 @@ public class ToDoItemsContext : DbContext
     public ToDoItemsContext(string connectionString = "DataSource=../../data/localdb.db")
     {
         this.connectionString = connectionString;
-        this.Database.Migrate();
     }
 
     public DbSet<ToDoItem> ToDoItems { get; set; }
+    public DbSet<Category> Categories { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -20,5 +20,14 @@ public class ToDoItemsContext : DbContext
         {
             optionsBuilder.UseSqlite(connectionString);
         }
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ToDoItem>()
+            .HasOne(t => t.Category)
+            .WithMany(c => c.ToDoItems)
+            .HasForeignKey(t => t.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
