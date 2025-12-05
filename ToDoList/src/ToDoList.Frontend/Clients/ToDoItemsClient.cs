@@ -60,4 +60,17 @@ public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
             return false;
         }
     }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        try
+        {
+            var response = await httpClient.DeleteAsync($"api/ToDoItems/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

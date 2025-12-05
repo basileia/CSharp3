@@ -5,10 +5,15 @@
 @inject IToDoItemsClient toDoItemsClient
 @inject NavigationManager NavigationManager
 
-<h2>ToDo Items Dashboard</h2>
-
+<h2 class="mt-4">Přehled úkolů</h2>
 
 <div class="container">
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @ErrorMessage
+        </div>
+    }
     <table class="table table-hover mt-3">
         <thead class="table-dark">
             <tr>
@@ -35,7 +40,27 @@
                     <td>@item.Name</td>
                     <td>@item.Description</td>
                     <td>@(item.IsCompleted ? "Ano" : "Ne")</td>
-                    <td><button class="btn btn-success" @onclick="() => EditItem(item)">Upravit</button></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm me-1" title="Upravit" @onclick="() => EditItem(item)">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+
+                        <button class="btn btn-warning btn-sm me-1" title="Přepnout dokončení"
+                            @onclick="() => ToggleCompleted(item)">
+                            @if (item.IsCompleted)
+                            {
+                                <i class="bi bi-x-circle"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-check-circle"></i>
+                            }
+                        </button>
+
+                        <button class="btn btn-danger btn-sm" title="Smazat" @onclick="() => DeleteItem(item)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -49,6 +74,7 @@
     private List<ToDoItemView> SortedData = new List<ToDoItemView>();
     private bool sortByIdAsc = true;
     private bool sortByNameAsc = true;
+    private string ErrorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -78,5 +104,39 @@
 
         sortByIdAsc = !sortByIdAsc;
         sortByNameAsc = true;
+    }
+
+    private async Task ToggleCompleted(ToDoItemView item)
+    {
+        item.IsCompleted = !item.IsCompleted;
+        ErrorMessage = string.Empty;
+
+        var updated = await toDoItemsClient.UpdateAsync(item);
+
+        if (!updated)
+        {
+            item.IsCompleted = !item.IsCompleted;
+            ErrorMessage = $"Nepodařilo se aktualizovat úkol '{item.Name}'.";
+        }
+        else
+        {
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteItem(ToDoItemView item)
+    {
+        ErrorMessage = string.Empty;
+        var deleted = await toDoItemsClient.DeleteAsync(item.Id);
+
+        if (deleted)
+        {
+            SortedData.Remove(item);
+            StateHasChanged();
+        }
+        else
+        {
+            ErrorMessage = $"Nepodařilo se smazat úkol '{item.Name}'.";
+        }
     }
 }
