@@ -35,6 +35,11 @@ public class Category
         }
 
         string result = stringBuilder.ToString().ToLowerInvariant();
-        return char.ToUpper(result[0]) + result.Substring(1);
+        if (string.IsNullOrEmpty(result))
+        {
+            return string.Empty;
+        }
+
+        return char.ToUpper(result[0], CultureInfo.InvariantCulture) + result[1..];
     }
 }
