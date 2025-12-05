@@ -9,7 +9,7 @@ using ToDoList.Domain.Mapping;
 using ToDoList.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-public abstract class ToDoItemsControllerTestBase : IAsyncDisposable
+public abstract class ToDoItemsControllerTestBase : IDisposable
 {
     protected IMapper Mapper { get; }
     protected IRepositoryAsync Repository { get; }
@@ -127,10 +127,9 @@ public abstract class ToDoItemsControllerTestBase : IAsyncDisposable
         };
     }
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
-        await DbContext.DisposeAsync();
-
+        DbContext.Dispose();
         if (File.Exists(dbPath))
         {
             File.Delete(dbPath);
