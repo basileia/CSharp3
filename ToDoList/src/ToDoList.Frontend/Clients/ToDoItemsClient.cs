@@ -1,6 +1,7 @@
 namespace ToDoList.Frontend.Clients;
 
 using ToDoList.Domain.DTOs;
+using ToDoList.Domain.Models;
 using ToDoList.Frontend.Models;
 
 public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
@@ -18,7 +19,8 @@ public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
             Id = dto.Id,
             Name = dto.Name,
             Description = dto.Description,
-            IsCompleted = dto.IsCompleted
+            IsCompleted = dto.IsCompleted,
+            CategoryName = dto.CategoryName
         }).ToList();
     }
 
@@ -47,7 +49,7 @@ public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
             item.Name,
             item.Description,
             item.IsCompleted,
-            CategoryId: null
+            item.CategoryId
         );
 
         try
@@ -72,5 +74,17 @@ public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
         {
             return false;
         }
+    }
+
+    public async Task<List<CategoryView>> GetCategoriesAsync()
+    {
+        var response = await httpClient.GetFromJsonAsync<List<Category>>("api/Categories")
+            ?? [];
+
+        return response.Select(cat => new CategoryView
+        {
+            Id = cat.Id,
+            Name = cat.Name
+        }).ToList();
     }
 }

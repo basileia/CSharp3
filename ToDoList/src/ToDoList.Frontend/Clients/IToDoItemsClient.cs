@@ -8,4 +8,5 @@ public interface IToDoItemsClient
     public Task<ToDoItemView?> ReadItemByIdAsync(int id);
     public Task<bool> UpdateAsync(ToDoItemView item);
     public Task<bool> DeleteAsync(int id);
+    public Task<List<CategoryView>> GetCategoriesAsync();
 }

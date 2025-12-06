@@ -6,29 +6,72 @@
 @inject NavigationManager NavigationManager
 @inject IToDoItemsClient toDoItemsClient
 
-@if (ToDoItemModel is not null)
-{
-    <EditForm Model="ToDoItemModel" FormName="" OnSubmit="Submit">
-        <div class="mb-3">
-            <label for="Name" class="form-label">Název:</label>
-            <InputText id="Name" @bind-Value="ToDoItemModel.Name" />
-        </div>
-        <label for="Name" class="form-label">Popis:</label>
-        <InputText id="Name" @bind-Value="ToDoItemModel.Description" />
-        <InputCheckbox id="IsCompleted" @bind-Value="ToDoItemModel.IsCompleted" />
-        <button type="submit">Odeslat</button>
+<h2 class="mt-4">Upravit úkol</h2>
 
-    </EditForm>
-}
+<div class="container mt-3">
+    @if (ToDoItemModel is not null)
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                Úprava úkolu: @ToDoItemModel.Name
+            </div>
+
+            <div class="card-body">
+
+                <EditForm Model="ToDoItemModel" FormName="" OnSubmit="Submit">
+                    <div class="mb-3">
+                        <label for="Name" class="form-label">Název</label>
+                        <InputText id="Name" class="form-control" @bind-Value="ToDoItemModel.Name" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Description" class="form-label">Popis</label>
+                        <InputText id="Description" class="form-control" @bind-Value="ToDoItemModel.Description" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="CategoryId" class="form-label">Kategorie</label>
+                        <select @bind="ToDoItemModel.CategoryId" class="form-select">
+                            <option value="">-- bez kategorie --</option>
+                            @foreach (var c in Categories)
+                            {
+                                <option value="@c.Id">@c.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <InputCheckbox id="IsCompleted" class="form-check-input" @bind-Value="ToDoItemModel.IsCompleted" />
+                        <label for="IsCompleted" class="form-check-label">Dokončeno</label>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            Uložit změny
+                        </button>
+
+                        <button class="btn btn-secondary" @onclick="BackToHome">
+                            <i class="bi bi-arrow-left"></i> Zpět na hlavní stránku
+                        </button>
+                    </div>
+
+                </EditForm>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
     [Parameter]
     public int Id { get; set; }
     public ToDoItemView ToDoItemModel { get; set; }
+    private List<CategoryView> Categories = [];
 
     protected override async Task OnInitializedAsync()
     {
-        ToDoItemModel = await toDoItemsClient.ReadItemByIdAsync(Id);
+        ToDoItemModel = await toDoItemsClient.ReadItemByIdAsync(Id) ?? new ToDoItemView();
+        Categories = await toDoItemsClient.GetCategoriesAsync();
+
     }
     public async Task Submit()
     {
@@ -36,4 +79,8 @@
         NavigationManager.NavigateTo("/");
     }
 
+    public async Task BackToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
 }

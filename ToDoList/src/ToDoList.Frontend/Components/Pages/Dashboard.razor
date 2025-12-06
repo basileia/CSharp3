@@ -17,17 +17,14 @@
     <table class="table table-hover mt-3">
         <thead class="table-dark">
             <tr>
-                <th>
-                    <button class="btn btn-primary" @onclick="OrderById" style="cursor:pointer">
-                        ID @((sortByIdAsc ? "▲" : "▼"))
-                    </button>
+                <th @onclick="OrderById" style="cursor:pointer">
+                    ID @(sortByIdAsc ? "▲" : "▼")
                 </th>
-                <th>
-                    <button class="btn btn-secondary" @onclick="OrderByName" style="cursor:pointer">
-                        Název @((sortByNameAsc ? "▲" : "▼"))
-                    </button>
+                <th @onclick="OrderByName" style="cursor:pointer">
+                    Název @(sortByNameAsc ? "▲" : "▼")
                 </th>
                 <th>Popis</th>
+                <th>Kategorie</th>
                 <th>Dokončeno</th>
                 <th>Akce</th>
             </tr>
@@ -39,6 +36,7 @@
                     <td>@item.Id</td>
                     <td>@item.Name</td>
                     <td>@item.Description</td>
+                    <td>@(item.CategoryName ?? "-")</td>
                     <td>@(item.IsCompleted ? "Ano" : "Ne")</td>
                     <td>
                         <button class="btn btn-primary btn-sm me-1" title="Upravit" @onclick="() => EditItem(item)">
@@ -65,8 +63,9 @@
             }
         </tbody>
     </table>
-    <div>
-        Počet úkolů: @SortedData.Count
+    <div class="mb-3">
+        <span class="fw-bold">Počet úkolů:</span>
+        <span class="badge bg-primary">@SortedData.Count</span>
     </div>
 </div>
 

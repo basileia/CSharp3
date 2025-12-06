@@ -9,6 +9,7 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<ToDoItemCreateRequestDto, ToDoItem>().ReverseMap();
+
         CreateMap<ToDoItemUpdateRequestDto, ToDoItem>().ReverseMap();
         CreateMap<ToDoItemGetResponseDto, ToDoItem>().ReverseMap();
 
