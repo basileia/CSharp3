@@ -18,15 +18,18 @@
 
             <div class="card-body">
 
-                <EditForm Model="ToDoItemModel" FormName="" OnSubmit="Submit">
+                <EditForm Model="ToDoItemModel" FormName="" OnValidSubmit="Submit">
+                    <DataAnnotationsValidator />
                     <div class="mb-3">
                         <label for="Name" class="form-label">Název</label>
                         <InputText id="Name" class="form-control" @bind-Value="ToDoItemModel.Name" />
+                        <ValidationMessage For="@(() => ToDoItemModel.Name)" />
                     </div>
 
                     <div class="mb-3">
                         <label for="Description" class="form-label">Popis</label>
                         <InputText id="Description" class="form-control" @bind-Value="ToDoItemModel.Description" />
+                        <ValidationMessage For="@(() => ToDoItemModel.Description)" />
                     </div>
 
                     <div class="mb-3">
