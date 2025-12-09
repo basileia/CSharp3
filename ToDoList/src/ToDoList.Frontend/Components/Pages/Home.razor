@@ -6,5 +6,57 @@
 <Dashboard />
 
 @code {
+    public delegate int NumberOperationDelegate(int number1, int number2); //definice delegáta
+    public delegate void StringTakingDelegate(string input);
+    public int Multiply(int a, int b)
+    {
+        return a * b;
+    }
+
+    public int Divide(int a, int b)
+    {
+        if (b == 0)
+        {
+            Console.WriteLine("Chyba: dělení nulou není povoleno.");
+            return 0;
+        }
+        return a / b;
+    }
+
+    public void LogToConsole(string msg)
+    {
+        Console.WriteLine(msg);
+    }
+    public int DivideBy2(int a)
+    {
+        return a / 2;
+    }
+    protected override void OnInitialized()
+    {
+        NumberOperationDelegate mujDelegat; //deklarace
+        mujDelegat = Multiply; //přiřazení funkce do delegáta
+        mujDelegat += Multiply;
+        mujDelegat += Divide; // funguje jako kontejner na funkce se stejným podpisem
+
+        int result = mujDelegat(5, 4); //volání funkce přes delegáta
+        Console.WriteLine($"Výsledek násobení je: {result}");
+
+        StringTakingDelegate mujDelegatNaString;
+        mujDelegatNaString = LogToConsole;
+        mujDelegatNaString += LogToConsole;
+
+        mujDelegatNaString?.Invoke("LogujDoKonzole");
+
+        List<string> strings = new List<string> { "a", "b", "c", "d", "e" };
+        strings.Where(s => s.Contains('c'));
+
+        Action functionReturningVoid; //delegát, který nevrací hodnotu a nemá parametry, předpřipravené .NETem
+        Action<string> functionTakingStringAndReturningVoid; //delegát, který nevrací hodnotu, ale má parametry
+        functionTakingStringAndReturningVoid = LogToConsole;
+
+        functionTakingStringAndReturningVoid?.Invoke("Zpráva z Action!");
+
+        Func<bool> functionReturningBool;
+    }
 
 }

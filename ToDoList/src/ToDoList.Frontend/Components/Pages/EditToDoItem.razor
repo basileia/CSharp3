@@ -69,16 +69,25 @@
     public int Id { get; set; }
     public ToDoItemView ToDoItemModel { get; set; }
     private List<CategoryView> Categories = [];
+    public delegate void ToDoItemViewProcessingDelegate(ToDoItemView view);
+
+    public ToDoItemViewProcessingDelegate? SubmitDelegate;
+
+    public void LogSubmit(ToDoItemView view)
+    {
+        Console.WriteLine($"Úkol {view.Id} byl odeslán k úpravě.");
+    }
 
     protected override async Task OnInitializedAsync()
     {
         ToDoItemModel = await toDoItemsClient.ReadItemByIdAsync(Id) ?? new ToDoItemView();
         Categories = await toDoItemsClient.GetCategoriesAsync();
-
+        SubmitDelegate += LogSubmit;
     }
     public async Task Submit()
     {
         await toDoItemsClient.UpdateAsync(ToDoItemModel);
+        SubmitDelegate?.Invoke(ToDoItemModel);
         NavigationManager.NavigateTo("/");
     }
 
@@ -86,4 +95,5 @@
     {
         NavigationManager.NavigateTo("/");
     }
+
 }
