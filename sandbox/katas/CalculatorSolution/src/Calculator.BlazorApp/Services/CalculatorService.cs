@@ -14,7 +14,12 @@ namespace Calculator.BlazorApp.Services
         public void AppendNumber(string input)
         {
             if (_state == CalculatorState.Error)
-                return;
+            {
+                _errorMessage = null;
+                _displayText = "0";
+                _storedValue = 0;
+                _state = CalculatorState.Initial;
+            }
 
             if (_state == CalculatorState.ResultDisplayed)
             {
@@ -52,7 +57,13 @@ namespace Calculator.BlazorApp.Services
         public void SetOperation(string operation)
         {
             if (_state == CalculatorState.Error)
-                return;
+            {
+                _errorMessage = null;
+                _displayText = "0";
+                _storedValue = 0;
+                _state = CalculatorState.Initial;
+            }
+
 
             double currentNumber = ParseDisplayValue();
 
