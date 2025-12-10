@@ -119,12 +119,12 @@
         item.IsCompleted = !item.IsCompleted;
         ErrorMessage = string.Empty;
 
-        var updated = await toDoItemsClient.UpdateAsync(item);
+        var result = await toDoItemsClient.UpdateAsync(item);
 
-        if (!updated)
+        if (result.IsSuccess == false)
         {
             item.IsCompleted = !item.IsCompleted;
-            ErrorMessage = $"Nepodařilo se aktualizovat úkol '{item.Name}'.";
+            ErrorMessage = result.Error ?? $"Nepodařilo se aktualizovat úkol '{item.Name}'.";
         }
         else
         {
@@ -135,16 +135,16 @@
     private async Task DeleteItem(ToDoItemView item)
     {
         ErrorMessage = string.Empty;
-        var deleted = await toDoItemsClient.DeleteAsync(item.Id);
+        var result = await toDoItemsClient.DeleteAsync(item.Id);
 
-        if (deleted)
+        if (result.IsSuccess)
         {
             SortedData.Remove(item);
             StateHasChanged();
         }
         else
         {
-            ErrorMessage = $"Nepodařilo se smazat úkol '{item.Name}'.";
+            ErrorMessage = result.Error ?? $"Nepodařilo se smazat úkol '{item.Name}'.";
         }
     }
 }

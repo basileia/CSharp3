@@ -1,5 +1,7 @@
 namespace ToDoList.Frontend.Clients;
 
+using Microsoft.AspNetCore.Mvc;
+using ToDoList.Domain.Common;
 using ToDoList.Domain.DTOs;
 using ToDoList.Domain.Models;
 using ToDoList.Frontend.Models;
@@ -24,26 +26,42 @@ public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
         }).ToList();
     }
 
-    public async Task<ToDoItemView?> ReadItemByIdAsync(int id)
+    public async Task<Result<ToDoItemView>> ReadItemByIdAsync(int id)
     {
-        var response = await httpClient
-            .GetFromJsonAsync<ToDoItemGetResponseDto>($"api/ToDoItems/{id}");
+        HttpResponseMessage response;
 
-        if (response is null)
+        try
         {
-            return null;
+            response = await httpClient.GetAsync($"api/ToDoItems/{id}");
+        }
+        catch
+        {
+            return Result<ToDoItemView>.Fail("Nepodařilo se spojit se serverem.");
         }
 
-        return new ToDoItemView
+        if (response.IsSuccessStatusCode)
         {
-            Id = response.Id,
-            Name = response.Name,
-            Description = response.Description,
-            IsCompleted = response.IsCompleted
-        };
+            var dto = await response.Content.ReadFromJsonAsync<ToDoItemGetResponseDto>();
+
+            var item = new ToDoItemView
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Description = dto.Description,
+                IsCompleted = dto.IsCompleted,
+                CategoryName = dto.CategoryName
+            };
+
+            return Result<ToDoItemView>.Ok(item);
+        }
+        else
+        {
+            var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+            return Result<ToDoItemView>.Fail(problem?.Detail ?? "Neznámá chyba.");
+        }
     }
 
-    public async Task<bool> UpdateAsync(ToDoItemView item)
+    public async Task<Result<bool>> UpdateAsync(ToDoItemView item)
     {
         var itemRequest = new ToDoItemUpdateRequestDto(
             item.Name,
@@ -52,39 +70,43 @@ public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
             item.CategoryId
         );
 
+        HttpResponseMessage response;
+
         try
         {
-            var response = await httpClient.PutAsJsonAsync($"api/ToDoItems/{item.Id}", itemRequest);
-            return response.IsSuccessStatusCode;
+            response = await httpClient.PutAsJsonAsync($"api/ToDoItems/{item.Id}", itemRequest);
         }
         catch
         {
-            return false;
+            return Result<bool>.Fail("Nepodařilo se spojit se serverem.");
         }
+
+        if (response.IsSuccessStatusCode)
+        {
+            return Result<bool>.Ok();
+        }
+
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        return Result<bool>.Fail(problem?.Detail ?? "Neznámá chyba.");
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<Result<bool>> DeleteAsync(int id)
     {
+        HttpResponseMessage response;
+
         try
         {
-            var response = await httpClient.DeleteAsync($"api/ToDoItems/{id}");
-            return response.IsSuccessStatusCode;
+            response = await httpClient.DeleteAsync($"api/ToDoItems/{id}");
         }
         catch
         {
-            return false;
+            return Result<bool>.Fail("Nepodařilo se spojit se serverem.");
         }
-    }
 
-    public async Task<List<CategoryView>> GetCategoriesAsync()
-    {
-        var response = await httpClient.GetFromJsonAsync<List<Category>>("api/Categories")
-            ?? [];
+        if (response.IsSuccessStatusCode)
+            return Result<bool>.Ok();
 
-        return response.Select(cat => new CategoryView
-        {
-            Id = cat.Id,
-            Name = cat.Name
-        }).ToList();
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        return Result<bool>.Fail(problem?.Detail ?? "Neznámá chyba.");
     }
 }

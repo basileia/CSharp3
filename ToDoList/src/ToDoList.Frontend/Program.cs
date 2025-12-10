@@ -8,6 +8,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5190/") });
 builder.Services.AddScoped<IToDoItemsClient, ToDoItemsClient>();
+builder.Services.AddScoped<ICategoriesClient, CategoriesClient>();
 
 
 var app = builder.Build();

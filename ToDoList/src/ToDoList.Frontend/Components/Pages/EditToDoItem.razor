@@ -5,9 +5,17 @@
 
 @inject NavigationManager NavigationManager
 @inject IToDoItemsClient toDoItemsClient
+@inject ICategoriesClient categoriesClient
 
 <div class="container mt-3">
     <h2 class="mt-4">Upravit úkol</h2>
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @ErrorMessage
+        </div>
+    }
 
     @if (ToDoItemModel is not null)
     {
@@ -19,14 +27,17 @@
             <div class="card-body">
 
                 <EditForm Model="ToDoItemModel" FormName="" OnSubmit="Submit">
+                    <DataAnnotationsValidator />
                     <div class="mb-3">
                         <label for="Name" class="form-label">Název</label>
                         <InputText id="Name" class="form-control" @bind-Value="ToDoItemModel.Name" />
+                        <ValidationMessage For="@(() => ToDoItemModel.Name)" />
                     </div>
 
                     <div class="mb-3">
                         <label for="Description" class="form-label">Popis</label>
                         <InputText id="Description" class="form-control" @bind-Value="ToDoItemModel.Description" />
+                        <ValidationMessage For="@(() => ToDoItemModel.Description)" />
                     </div>
 
                     <div class="mb-3">
@@ -66,16 +77,34 @@
     public int Id { get; set; }
     public ToDoItemView ToDoItemModel { get; set; }
     private List<CategoryView> Categories = [];
+    private string ErrorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        ToDoItemModel = await toDoItemsClient.ReadItemByIdAsync(Id) ?? new ToDoItemView();
-        Categories = await toDoItemsClient.GetCategoriesAsync();
+        var result = await toDoItemsClient.ReadItemByIdAsync(Id);
+        if (result.IsSuccess)
+        {
+            ToDoItemModel = result.Value;
+        }
+        else
+            ErrorMessage = result.Error ?? "Nepodařilo se načíst úkol.";
+
+        Categories = await categoriesClient.GetCategoriesAsync();
 
     }
     public async Task Submit()
     {
-        await toDoItemsClient.UpdateAsync(ToDoItemModel);
-        NavigationManager.NavigateTo("/");
+        ErrorMessage = string.Empty;
+
+        var result = await toDoItemsClient.UpdateAsync(ToDoItemModel);
+
+        if (result.IsSuccess)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            ErrorMessage = result.Error ?? "Nepodařilo se uložit změny.";
+        }
     }
 }
