@@ -6,9 +6,9 @@
 @inject NavigationManager NavigationManager
 @inject IToDoItemsClient toDoItemsClient
 
-<h2 class="mt-4">Upravit úkol</h2>
-
 <div class="container mt-3">
+    <h2 class="mt-4">Upravit úkol</h2>
+
     @if (ToDoItemModel is not null)
     {
         <div class="card shadow-sm">
@@ -50,7 +50,7 @@
                             Uložit změny
                         </button>
 
-                        <button class="btn btn-secondary" @onclick="BackToHome">
+                        <button class="btn btn-secondary" click='() => NavigationManager.NavigateTo("/")'>
                             <i class="bi bi-arrow-left"></i> Zpět na hlavní stránku
                         </button>
                     </div>
@@ -76,11 +76,6 @@
     public async Task Submit()
     {
         await toDoItemsClient.UpdateAsync(ToDoItemModel);
-        NavigationManager.NavigateTo("/");
-    }
-
-    public async Task BackToHome()
-    {
         NavigationManager.NavigateTo("/");
     }
 }

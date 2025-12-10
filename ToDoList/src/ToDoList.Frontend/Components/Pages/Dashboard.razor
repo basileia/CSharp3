@@ -5,9 +5,20 @@
 @inject IToDoItemsClient toDoItemsClient
 @inject NavigationManager NavigationManager
 
-<h2 class="mt-4">Přehled úkolů</h2>
-
 <div class="container">
+    <h2 class="mt-4">Přehled úkolů</h2>
+
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary" @onclick='() => NavigationManager.NavigateTo("/addToDoItem")'>
+            <i class="bi bi-plus-circle me-1"></i>
+            Přidat úkol
+        </button>
+        <button class="btn btn-outline-secondary" @onclick='() => NavigationManager.NavigateTo("/addCategory")'>
+            <i class="bi bi-folder-plus me-1"></i>
+            Přidat kategorii
+        </button>
+    </div>
+
     @if (!string.IsNullOrEmpty(ErrorMessage))
     {
         <div class="alert alert-danger" role="alert">
@@ -39,34 +50,32 @@
                     <td>@(item.CategoryName ?? "-")</td>
                     <td>@(item.IsCompleted ? "Ano" : "Ne")</td>
                     <td>
-                        <button class="btn btn-primary btn-sm me-1" title="Upravit" @onclick="() => EditItem(item)">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-primary btn-sm" title="Upravit" @onclick="() => EditItem(item)">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
 
-                        <button class="btn btn-warning btn-sm me-1" title="Přepnout dokončení"
-                            @onclick="() => ToggleCompleted(item)">
-                            @if (item.IsCompleted)
-                            {
-                                <i class="bi bi-x-circle"></i>
-                            }
-                            else
-                            {
-                                <i class="bi bi-check-circle"></i>
-                            }
-                        </button>
+                            <button class="btn btn-warning btn-sm" title="Přepnout dokončení"
+                                @onclick="() => ToggleCompleted(item)">
+                                @if (item.IsCompleted)
+                                {
+                                    <i class="bi bi-x-circle"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check-circle"></i>
+                                }
+                            </button>
 
-                        <button class="btn btn-danger btn-sm" title="Smazat" @onclick="() => DeleteItem(item)">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                            <button class="btn btn-danger btn-sm" title="Smazat" @onclick="() => DeleteItem(item)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-    <div class="mb-3">
-        <span class="fw-bold">Počet úkolů:</span>
-        <span class="badge bg-primary">@SortedData.Count</span>
-    </div>
 </div>
 
 @code {
