@@ -1,0 +1,61 @@
+@using ToDoList.Frontend.Models
+@inherits ComponentBase
+@inject NavigationManager NavigationManager
+
+<EditForm Model="Model" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="alert alert-danger">@ErrorMessage</div>
+    }
+
+    <div class="mb-3">
+        <label for="Name" class="form-label">Název</label>
+        <InputText id="Name" class="form-control" @bind-Value="Model.Name" />
+        <ValidationMessage For="@(() => Model.Name)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="Description" class="form-label">Popis</label>
+        <InputText id="Description" class="form-control" @bind-Value="Model.Description" />
+        <ValidationMessage For="@(() => Model.Description)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="CategoryId" class="form-label">Kategorie</label>
+        <select @bind="Model.CategoryId" class="form-select">
+            <option value="">-- bez kategorie --</option>
+            @foreach (var c in Categories)
+            {
+                <option value="@c.Id">@c.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-check mb-3">
+        <InputCheckbox id="IsCompleted" class="form-check-input" @bind-Value="Model.IsCompleted" />
+        <label for="IsCompleted" class="form-check-label">Dokončeno</label>
+    </div>
+
+    <button type="submit" class="btn btn-success">@SubmitText</button>
+
+    <button type="button" class="btn btn-secondary" @onclick='() => NavigationManager.NavigateTo("/")'>
+        <i class="bi bi-arrow-left"></i> Zpět na hlavní stránku
+    </button>
+</EditForm>
+
+@code {
+    [Parameter] public ToDoItemView Model { get; set; }
+    [Parameter] public List<CategoryView> Categories { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public string SubmitText { get; set; } = "Uložit";
+
+    [Parameter] public string? ErrorMessage { get; set; } = string.Empty;
+
+    private async Task HandleSubmit()
+    {
+        if (OnValidSubmit.HasDelegate)
+            await OnValidSubmit.InvokeAsync();
+    }
+}

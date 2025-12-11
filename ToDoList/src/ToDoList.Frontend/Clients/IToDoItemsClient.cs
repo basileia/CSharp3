@@ -9,4 +9,5 @@ public interface IToDoItemsClient
     public Task<Result<ToDoItemView>> ReadItemByIdAsync(int id);
     public Task<Result<bool>> UpdateAsync(ToDoItemView item);
     public Task<Result<bool>> DeleteAsync(int id);
+    public Task<Result<ToDoItemView>> CreateAsync(ToDoItemView item);
 }

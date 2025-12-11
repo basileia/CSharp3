@@ -1,6 +1,7 @@
-@page "/editToDoItem/{Id:int}"
+@page "/addToDoItem"
 @using ToDoList.Frontend.Models
 @using ToDoList.Frontend.Clients
+
 @rendermode InteractiveServer
 
 @inject NavigationManager NavigationManager
@@ -8,17 +9,17 @@
 @inject ICategoriesClient categoriesClient
 
 <div class="container mt-3">
-    <h2 class="mt-4">Upravit úkol</h2>
+    <h2 class="mt-4">Přidat úkol</h2>
 
     @if (ToDoItemModel is not null)
     {
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
-                Úprava úkolu: @ToDoItemModel.Name
+                Vytvoření nového úkolu
             </div>
 
             <div class="card-body">
-                <ToDoItemForm Model="ToDoItemModel" Categories="Categories" SubmitText="Uložit změny" OnValidSubmit="Submit"
+                <ToDoItemForm Model="ToDoItemModel" Categories="Categories" SubmitText="Vytvořit" OnValidSubmit="Submit"
                     ErrorMessage="@ErrorMessage" />
             </div>
         </div>
@@ -26,30 +27,19 @@
 </div>
 
 @code {
-    [Parameter]
-    public int Id { get; set; }
-    public ToDoItemView ToDoItemModel { get; set; }
+    public ToDoItemView ToDoItemModel { get; set; } = new ToDoItemView();
     private List<CategoryView> Categories = [];
     private string ErrorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await toDoItemsClient.ReadItemByIdAsync(Id);
-        if (result.IsSuccess)
-        {
-            ToDoItemModel = result.Value!;
-        }
-        else
-            ErrorMessage = result.Error ?? "Nepodařilo se načíst úkol.";
-
         Categories = await categoriesClient.GetCategoriesAsync();
-
     }
     public async Task Submit()
     {
         ErrorMessage = string.Empty;
 
-        var result = await toDoItemsClient.UpdateAsync(ToDoItemModel);
+        var result = await toDoItemsClient.CreateAsync(ToDoItemModel);
 
         if (result.IsSuccess)
         {
@@ -57,7 +47,7 @@
         }
         else
         {
-            ErrorMessage = result.Error ?? "Nepodařilo se uložit změny.";
+            ErrorMessage = result.Error ?? "Nepodařilo se vytvořit úkol.";
         }
     }
 }

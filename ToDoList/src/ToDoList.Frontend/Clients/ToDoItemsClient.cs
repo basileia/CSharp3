@@ -3,7 +3,6 @@ namespace ToDoList.Frontend.Clients;
 using Microsoft.AspNetCore.Mvc;
 using ToDoList.Domain.Common;
 using ToDoList.Domain.DTOs;
-using ToDoList.Domain.Models;
 using ToDoList.Frontend.Models;
 
 public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
@@ -108,5 +107,35 @@ public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
 
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         return Result<bool>.Fail(problem?.Detail ?? "Neznámá chyba.");
+    }
+
+    public async Task<Result<ToDoItemView>> CreateAsync(ToDoItemView item)
+    {
+        var itemRequest = new ToDoItemCreateRequestDto(
+            item.Name,
+            item.Description,
+            item.IsCompleted,
+            item.CategoryId
+        );
+
+        HttpResponseMessage response;
+
+        try
+        {
+            response = await httpClient.PostAsJsonAsync("api/ToDoItems", itemRequest);
+        }
+        catch
+        {
+            return Result<ToDoItemView>.Fail("Nepodařilo se spojit se serverem.");
+        }
+
+        if (response.IsSuccessStatusCode)
+        {
+            var createdItem = await response.Content.ReadFromJsonAsync<ToDoItemGetResponseDto>();
+            return Result<ToDoItemView>.Ok();
+        }
+
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        return Result<ToDoItemView>.Fail(problem?.Detail ?? "Neznámá chyba.");
     }
 }
