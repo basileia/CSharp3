@@ -67,7 +67,8 @@
                                 }
                             </button>
 
-                            <button class="btn btn-danger btn-sm" title="Smazat" @onclick="() => DeleteItem(item)">
+                            <button class="btn btn-danger btn-sm" title="Smazat"
+                                @onclick="async () => await DeleteItem(item)">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
