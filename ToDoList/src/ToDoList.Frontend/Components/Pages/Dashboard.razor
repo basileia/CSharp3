@@ -8,10 +8,10 @@
 <h2 class="mt-4">Přehled úkolů</h2>
 
 <div class="container">
-    @if (!string.IsNullOrEmpty(ErrorMessage))
+    @if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger" role="alert">
-            @ErrorMessage
+            @errorMessage
         </div>
     }
     <table class="table table-hover mt-3">
@@ -33,7 +33,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in SortedData)
+            @foreach (var item in sortedData)
             {
                 <tr class="@(item.IsCompleted ? "table-success" : "")">
                     <td>@item.Id</td>
@@ -66,26 +66,26 @@
         </tbody>
     </table>
     <div>
-        Počet úkolů: @SortedData.Count
+        Počet úkolů: @sortedData.Count
     </div>
 </div>
 
 @code {
-    private List<ToDoItemView> SortedData = new List<ToDoItemView>();
+    private List<ToDoItemView> sortedData = new List<ToDoItemView>();
     private bool sortByIdAsc = true;
     private bool sortByNameAsc = true;
-    private string ErrorMessage = string.Empty;
+    private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        SortedData = await toDoItemsClient.ReadItemsAsync();
+        sortedData = await toDoItemsClient.ReadItemsAsync();
     }
 
     private void OrderByName()
     {
-        SortedData = sortByNameAsc
-        ? SortedData.OrderBy(item => item.Name).ToList()
-        : SortedData.OrderByDescending(item => item.Name).ToList();
+        sortedData = sortByNameAsc
+        ? sortedData.OrderBy(item => item.Name).ToList()
+        : sortedData.OrderByDescending(item => item.Name).ToList();
 
         sortByNameAsc = !sortByNameAsc;
         sortByIdAsc = true;
@@ -98,9 +98,9 @@
 
     private void OrderById()
     {
-        SortedData = sortByIdAsc
-        ? SortedData.OrderBy(item => item.Id).ToList()
-        : SortedData.OrderByDescending(item => item.Id).ToList();
+        sortedData = sortByIdAsc
+        ? sortedData.OrderBy(item => item.Id).ToList()
+        : sortedData.OrderByDescending(item => item.Id).ToList();
 
         sortByIdAsc = !sortByIdAsc;
         sortByNameAsc = true;
@@ -109,14 +109,14 @@
     private async Task ToggleCompleted(ToDoItemView item)
     {
         item.IsCompleted = !item.IsCompleted;
-        ErrorMessage = string.Empty;
+        errorMessage = string.Empty;
 
         var updated = await toDoItemsClient.UpdateAsync(item);
 
         if (!updated)
         {
             item.IsCompleted = !item.IsCompleted;
-            ErrorMessage = $"Nepodařilo se aktualizovat úkol '{item.Name}'.";
+            errorMessage = $"Nepodařilo se aktualizovat úkol '{item.Name}'.";
         }
         else
         {
@@ -126,17 +126,17 @@
 
     private async Task DeleteItem(ToDoItemView item)
     {
-        ErrorMessage = string.Empty;
+        errorMessage = string.Empty;
         var deleted = await toDoItemsClient.DeleteAsync(item.Id);
 
         if (deleted)
         {
-            SortedData.Remove(item);
+            sortedData.Remove(item);
             StateHasChanged();
         }
         else
         {
-            ErrorMessage = $"Nepodařilo se smazat úkol '{item.Name}'.";
+            errorMessage = $"Nepodařilo se smazat úkol '{item.Name}'.";
         }
     }
 }
