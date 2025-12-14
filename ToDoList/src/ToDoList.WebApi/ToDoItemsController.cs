@@ -101,6 +101,7 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository, IC
                 }
 
                 Mapper.Map(request, existingItem);
+                existingItem.Category = null;
                 await Repository.UpdateAsync(existingItem);
                 return NoContent();
             });

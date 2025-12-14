@@ -48,7 +48,8 @@ public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
                 Name = dto.Name,
                 Description = dto.Description,
                 IsCompleted = dto.IsCompleted,
-                CategoryName = dto.CategoryName
+                CategoryName = dto.CategoryName,
+                CategoryId = dto.CategoryId
             };
 
             return Result<ToDoItemView>.Ok(item);

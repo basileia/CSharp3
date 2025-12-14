@@ -18,8 +18,8 @@
             </div>
 
             <div class="card-body">
-                <ToDoItemForm Model="ToDoItemModel" Categories="Categories" SubmitText="Uložit změny" OnValidSubmit="Submit"
-                    ErrorMessage="@ErrorMessage" />
+                <ToDoItemForm Model="ToDoItemModel" Categories="categories" SubmitText="Uložit změny" OnValidSubmit="Submit"
+                    ErrorMessage="@errorMessage" />
             </div>
         </div>
     }
@@ -29,8 +29,8 @@
     [Parameter]
     public int Id { get; set; }
     public ToDoItemView ToDoItemModel { get; set; }
-    private List<CategoryView> Categories = [];
-    private string ErrorMessage = string.Empty;
+    private List<CategoryView> categories = [];
+    private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,14 +40,14 @@
             ToDoItemModel = result.Value!;
         }
         else
-            ErrorMessage = result.Error ?? "Nepodařilo se načíst úkol.";
+            errorMessage = result.Error ?? "Nepodařilo se načíst úkol.";
 
-        Categories = await categoriesClient.GetCategoriesAsync();
+        categories = await categoriesClient.GetCategoriesAsync();
 
     }
     public async Task Submit()
     {
-        ErrorMessage = string.Empty;
+        errorMessage = string.Empty;
 
         var result = await toDoItemsClient.UpdateAsync(ToDoItemModel);
 
@@ -57,7 +57,7 @@
         }
         else
         {
-            ErrorMessage = result.Error ?? "Nepodařilo se uložit změny.";
+            errorMessage = result.Error ?? "Nepodařilo se uložit změny.";
         }
     }
 }
