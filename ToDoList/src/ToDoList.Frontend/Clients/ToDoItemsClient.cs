@@ -104,7 +104,9 @@ public class ToDoItemsClient(HttpClient httpClient) : IToDoItemsClient
         }
 
         if (response.IsSuccessStatusCode)
+        {
             return Result<bool>.Ok();
+        }
 
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         return Result<bool>.Fail(problem?.Detail ?? "Neznámá chyba.");
