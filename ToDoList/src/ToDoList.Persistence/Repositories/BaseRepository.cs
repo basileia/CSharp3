@@ -19,7 +19,8 @@ public abstract class BaseRepository<TEntity>(ToDoItemsContext context) : IBaseR
 
     public virtual async Task UpdateAsync(TEntity entity)
     {
-        Context.Update(entity);
+        Context.Attach(entity);
+        Context.Entry(entity).State = EntityState.Modified;
         await Context.SaveChangesAsync();
     }
 

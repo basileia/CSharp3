@@ -1,0 +1,86 @@
+@page "/categories"
+@using ToDoList.Frontend.Models
+@using ToDoList.Frontend.Clients
+@rendermode InteractiveServer
+
+@inject ICategoriesClient CategoriesClient
+@inject NavigationManager NavigationManager
+
+<div class="container">
+    <h2 class="mt-4">Přehled kategorií</h2>
+
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary" @onclick='() => NavigationManager.NavigateTo("/addCategory")'>
+            <i class="bi bi-folder-plus me-1"></i>
+            Přidat kategorii
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+
+    <table class="table table-hover mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Název</th>
+                <th class="text-center">Akce</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var category in categories)
+            {
+                <tr>
+                    <td>@category.Id</td>
+                    <td>@category.Name</td>
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <button class="btn btn-primary btn-sm" title="Upravit" @onclick="() => EditCategory(category)">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+
+                            <button class="btn btn-danger btn-sm" title="Smazat"
+                                @onclick="async () => await DeleteCategory(category)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private List<CategoryView> categories = [];
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoriesClient.GetCategoriesAsync();
+    }
+
+    private void EditCategory(CategoryView category)
+    {
+        NavigationManager.NavigateTo($"/editCategory/{category.Id}");
+    }
+
+    private async Task DeleteCategory(CategoryView category)
+    {
+        errorMessage = string.Empty;
+
+        var result = await CategoriesClient.DeleteCategoryAsync(category.Id);
+
+        if (result.IsSuccess)
+        {
+            categories.Remove(category);
+            StateHasChanged();
+        }
+        else
+        {
+            errorMessage = result.Error ?? "Nepodařilo se smazat kategorii {category.Name}.";
+        }
+    }
+}

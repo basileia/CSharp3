@@ -1,0 +1,80 @@
+@page "/editCategory/{Id:int}"
+@using ToDoList.Frontend.Models
+@using ToDoList.Frontend.Clients
+@rendermode InteractiveServer
+
+@inject NavigationManager NavigationManager
+@inject ICategoriesClient CategoriesClient
+
+<div class="container mt-3">
+    <h2 class="mt-4">Upravit kategorii</h2>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-header bg-primary text-white">
+            Úprava kategorie
+        </div>
+
+        <div class="card-body">
+            <EditForm Model="category" OnValidSubmit="Submit">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <label for="CategoryName" class="form-label">Název kategorie</label>
+                    <InputText id="CategoryName" class="form-control" @bind-Value="category.Name" />
+                    <ValidationMessage For="@(() => category.Name)" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        Uložit změny
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" @onclick='() => NavigationManager.NavigateTo("/")'>
+                        <i class="bi bi-arrow-left"></i> Zpět na hlavní stránku
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private CategoryView category = new();
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await CategoriesClient.ReadCategoryByIdAsync(Id);
+        if (result.IsSuccess)
+        {
+            category = result.Value!;
+        }
+        else
+            errorMessage = result.Error ?? "Nepodařilo se načíst kategorii.";
+    }
+
+    private async Task Submit()
+    {
+        errorMessage = string.Empty;
+
+        var result = await CategoriesClient.UpdateAsync(category);
+
+        if (result.IsSuccess)
+        {
+            NavigationManager.NavigateTo("/categories");
+        }
+        else
+        {
+            errorMessage = result.Error ?? "Nepodařilo se vytvořit kategorii.";
+        }
+    }
+}

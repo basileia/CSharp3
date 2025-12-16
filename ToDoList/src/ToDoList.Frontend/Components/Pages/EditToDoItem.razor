@@ -5,35 +5,59 @@
 
 @inject NavigationManager NavigationManager
 @inject IToDoItemsClient toDoItemsClient
+@inject ICategoriesClient categoriesClient
 
-@if (ToDoItemModel is not null)
-{
-    <EditForm Model="ToDoItemModel" FormName="" OnSubmit="Submit">
-        <div class="mb-3">
-            <label for="Name" class="form-label">Název:</label>
-            <InputText id="Name" @bind-Value="ToDoItemModel.Name" />
+<div class="container mt-3">
+    <h2 class="mt-4">Upravit úkol</h2>
+
+    @if (ToDoItemModel is not null)
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                Úprava úkolu: @ToDoItemModel.Name
+            </div>
+
+            <div class="card-body">
+                <ToDoItemForm Model="ToDoItemModel" Categories="categories" SubmitText="Uložit změny" OnValidSubmit="Submit"
+                    ErrorMessage="@errorMessage" />
+            </div>
         </div>
-        <label for="Name" class="form-label">Popis:</label>
-        <InputText id="Name" @bind-Value="ToDoItemModel.Description" />
-        <InputCheckbox id="IsCompleted" @bind-Value="ToDoItemModel.IsCompleted" />
-        <button type="submit">Odeslat</button>
-
-    </EditForm>
-}
+    }
+</div>
 
 @code {
     [Parameter]
     public int Id { get; set; }
     public ToDoItemView ToDoItemModel { get; set; }
+    private List<CategoryView> categories = [];
+    private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        ToDoItemModel = await toDoItemsClient.ReadItemByIdAsync(Id);
+        var result = await toDoItemsClient.ReadItemByIdAsync(Id);
+        if (result.IsSuccess)
+        {
+            ToDoItemModel = result.Value!;
+        }
+        else
+            errorMessage = result.Error ?? "Nepodařilo se načíst úkol.";
+
+        categories = await categoriesClient.GetCategoriesAsync();
+
     }
     public async Task Submit()
     {
-        await toDoItemsClient.UpdateAsync(ToDoItemModel);
-        NavigationManager.NavigateTo("/");
-    }
+        errorMessage = string.Empty;
 
+        var result = await toDoItemsClient.UpdateAsync(ToDoItemModel);
+
+        if (result.IsSuccess)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = result.Error ?? "Nepodařilo se uložit změny.";
+        }
+    }
 }

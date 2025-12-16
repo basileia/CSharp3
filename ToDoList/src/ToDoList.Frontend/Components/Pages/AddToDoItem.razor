@@ -1,0 +1,53 @@
+@page "/addToDoItem"
+@using ToDoList.Frontend.Models
+@using ToDoList.Frontend.Clients
+
+@rendermode InteractiveServer
+
+@inject NavigationManager NavigationManager
+@inject IToDoItemsClient ToDoItemsClient
+@inject ICategoriesClient CategoriesClient
+
+<div class="container mt-3">
+    <h2 class="mt-4">Přidat úkol</h2>
+
+    @if (ToDoItemModel is not null)
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                Vytvoření nového úkolu
+            </div>
+
+            <div class="card-body">
+                <ToDoItemForm Model="ToDoItemModel" Categories="categories" SubmitText="Vytvořit" OnValidSubmit="Submit"
+                    ErrorMessage="@errorMessage" />
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    public ToDoItemView ToDoItemModel { get; set; } = new ToDoItemView();
+    private List<CategoryView> categories = [];
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoriesClient.GetCategoriesAsync();
+    }
+    public async Task Submit()
+    {
+        errorMessage = string.Empty;
+
+        var result = await ToDoItemsClient.CreateAsync(ToDoItemModel);
+
+        if (result.IsSuccess)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = result.Error ?? "Nepodařilo se vytvořit úkol.";
+        }
+    }
+}

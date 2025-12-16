@@ -1,0 +1,67 @@
+@page "/addCategory"
+@using ToDoList.Frontend.Clients
+@using ToDoList.Frontend.Models
+@rendermode InteractiveServer
+
+@inject ICategoriesClient CategoriesClient
+@inject NavigationManager NavigationManager
+
+<div class="container mt-3">
+    <h2 class="mt-4">Přidat kategorii</h2>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-header bg-primary text-white">
+            Nová kategorie
+        </div>
+
+        <div class="card-body">
+            <EditForm Model="category" OnValidSubmit="AddNewCategory">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <label for="CategoryName" class="form-label">Název kategorie</label>
+                    <InputText id="CategoryName" class="form-control" @bind-Value="category.Name" />
+                    <ValidationMessage For="@(() => category.Name)" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        Uložit kategorii
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" @onclick='() => NavigationManager.NavigateTo("/")'>
+                        <i class="bi bi-arrow-left"></i> Zpět na hlavní stránku
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CategoryCreateModel category = new();
+    private string errorMessage = string.Empty;
+
+    private async Task AddNewCategory()
+    {
+        errorMessage = string.Empty;
+
+        var result = await CategoriesClient.CreateCategoryAsync(category);
+
+        if (result.IsSuccess)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = result.Error ?? "Nepodařilo se vytvořit kategorii.";
+        }
+    }
+}
