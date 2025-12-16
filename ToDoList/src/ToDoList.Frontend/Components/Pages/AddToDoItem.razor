@@ -5,8 +5,8 @@
 @rendermode InteractiveServer
 
 @inject NavigationManager NavigationManager
-@inject IToDoItemsClient toDoItemsClient
-@inject ICategoriesClient categoriesClient
+@inject IToDoItemsClient ToDoItemsClient
+@inject ICategoriesClient CategoriesClient
 
 <div class="container mt-3">
     <h2 class="mt-4">Přidat úkol</h2>
@@ -19,8 +19,8 @@
             </div>
 
             <div class="card-body">
-                <ToDoItemForm Model="ToDoItemModel" Categories="Categories" SubmitText="Vytvořit" OnValidSubmit="Submit"
-                    ErrorMessage="@ErrorMessage" />
+                <ToDoItemForm Model="ToDoItemModel" Categories="categories" SubmitText="Vytvořit" OnValidSubmit="Submit"
+                    ErrorMessage="@errorMessage" />
             </div>
         </div>
     }
@@ -28,18 +28,18 @@
 
 @code {
     public ToDoItemView ToDoItemModel { get; set; } = new ToDoItemView();
-    private List<CategoryView> Categories = [];
-    private string ErrorMessage = string.Empty;
+    private List<CategoryView> categories = [];
+    private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        Categories = await categoriesClient.GetCategoriesAsync();
+        categories = await CategoriesClient.GetCategoriesAsync();
     }
     public async Task Submit()
     {
-        ErrorMessage = string.Empty;
+        errorMessage = string.Empty;
 
-        var result = await toDoItemsClient.CreateAsync(ToDoItemModel);
+        var result = await ToDoItemsClient.CreateAsync(ToDoItemModel);
 
         if (result.IsSuccess)
         {
@@ -47,7 +47,7 @@
         }
         else
         {
-            ErrorMessage = result.Error ?? "Nepodařilo se vytvořit úkol.";
+            errorMessage = result.Error ?? "Nepodařilo se vytvořit úkol.";
         }
     }
 }

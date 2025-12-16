@@ -9,10 +9,10 @@
 <div class="container mt-3">
     <h2 class="mt-4">Přidat kategorii</h2>
 
-    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
         <div class="alert alert-danger" role="alert">
-            @ErrorMessage
+            @errorMessage
         </div>
     }
 
@@ -47,11 +47,11 @@
 
 @code {
     private CategoryCreateModel category = new();
-    private string ErrorMessage = string.Empty;
+    private string errorMessage = string.Empty;
 
     private async Task AddNewCategory()
     {
-        ErrorMessage = string.Empty;
+        errorMessage = string.Empty;
 
         var result = await CategoriesClient.CreateCategoryAsync(category);
 
@@ -61,7 +61,7 @@
         }
         else
         {
-            ErrorMessage = result.Error ?? "Nepodařilo se vytvořit kategorii.";
+            errorMessage = result.Error ?? "Nepodařilo se vytvořit kategorii.";
         }
     }
 }
