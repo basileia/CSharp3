@@ -1,6 +1,7 @@
 using AutoMapper;
 using ToDoList.Domain.Mapping;
 using ToDoList.Persistence;
+using ToDoList.Persistence.Audit;
 using ToDoList.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddAutoMapper(typeof(MappingProfile));
     builder.Services.AddScoped<IRepositoryAsync, ToDoItemsRepository>();
     builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+    builder.Services.AddScoped<IAudit, Audit>();
 
     builder.Services.AddScoped<IMapper, Mapper>();
 }

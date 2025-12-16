@@ -10,10 +10,10 @@ using ToDoList.Persistence.Repositories;
 [ApiController]
 public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository, ICategoryRepository categoryRepository) : BaseApiController<ToDoItem, IRepositoryAsync>(mapper, repository)
 {
-    private readonly ICategoryRepository CategoryRepository = categoryRepository;
+    private readonly ICategoryRepository categoryRepository = categoryRepository;
     private async Task<ActionResult<Category?>> ValidateCategory(int categoryId)
     {
-        var category = await CategoryRepository.ReadByIdAsync(categoryId);
+        var category = await categoryRepository.ReadByIdAsync(categoryId);
         if (category == null)
         {
             return Problem(
@@ -25,57 +25,49 @@ public class ToDoItemsController(IMapper mapper, IRepositoryAsync repository, IC
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(ToDoItemCreateRequestDto request)
-    {
-        return await ExecuteWithExceptionHandling(async () =>
-            {
-                if (request.CategoryId is not null)
-                {
-                    var categoryResult = await ValidateCategory(request.CategoryId.Value);
-                    if (categoryResult.Result != null)
-                        return categoryResult.Result;
+    public async Task<IActionResult> Create(ToDoItemCreateRequestDto request) => await ExecuteWithExceptionHandling(async () =>
+     {
+         if (request.CategoryId is not null)
+         {
+             var categoryResult = await ValidateCategory(request.CategoryId.Value);
+             if (categoryResult.Result != null)
+             {
+                 return categoryResult.Result;
+             }
+             var category = categoryResult.Value;
+         }
 
-                    var category = categoryResult.Value;
-                }
+         var item = Mapper.Map<ToDoItem>(request);
+         await Repository.CreateAsync(item);
 
-                var item = Mapper.Map<ToDoItem>(request);
-                await Repository.CreateAsync(item);
-
-                var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
-                return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.Id }, responseDto);
-            });
-    }
+         var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
+         return CreatedAtAction(nameof(ReadById), new { toDoItemId = item.Id }, responseDto);
+     });
 
     [HttpGet]
-    public async Task<IActionResult> Read()
+    public async Task<ActionResult<IEnumerable<ToDoItemGetResponseDto>>> Read() => await ExecuteWithExceptionHandling<IEnumerable<ToDoItemGetResponseDto>>(async () =>
     {
-        return await ExecuteWithExceptionHandling(async () =>
-            {
-                var items = await Repository.ReadAllIncludingCategoryAsync();
-                var response = Mapper.Map<IEnumerable<ToDoItemGetResponseDto>>(items);
-                return Ok(response);
-            });
-    }
+        var items = await Repository.ReadAllIncludingCategoryAsync();
+        var response = Mapper.Map<IEnumerable<ToDoItemGetResponseDto>>(items);
+        return Ok(response);
+    });
 
     [HttpGet("{toDoItemId:int}")]
-    public async Task<IActionResult> ReadById(int toDoItemId)
+    public async Task<ActionResult<ToDoItemGetResponseDto>> ReadById(int toDoItemId) => await ExecuteWithExceptionHandling<ToDoItemGetResponseDto>(async () =>
     {
-        return await ExecuteWithExceptionHandling(async () =>
-            {
-                var item = await Repository.ReadByIdIncludingCategoryAsync(toDoItemId);
+        var item = await Repository.ReadByIdIncludingCategoryAsync(toDoItemId);
 
-                if (item == null)
-                {
-                    return Problem(
-                        detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
-                        statusCode: StatusCodes.Status404NotFound
-                    );
-                }
+        if (item == null)
+        {
+            return Problem(
+                detail: $"Úkol s ID {toDoItemId} nebyl nalezen.",
+                statusCode: StatusCodes.Status404NotFound
+            );
+        }
 
-                var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
-                return Ok(responseDto);
-            });
-    }
+        var responseDto = Mapper.Map<ToDoItemGetResponseDto>(item);
+        return Ok(responseDto);
+    });
 
     [HttpPut("{toDoItemId:int}")]
     public async Task<IActionResult> UpdateById(int toDoItemId, [FromBody] ToDoItemUpdateRequestDto request)
